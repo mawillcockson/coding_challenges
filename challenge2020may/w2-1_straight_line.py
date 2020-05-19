@@ -17,7 +17,11 @@ Constraints:
 * -10^4 <= coordinates[i][0], coordinates[i][1] <= 10^4
 * coordinates contains no duplicate point.
 """
-from typing import List, NamedTuple, Union, Tuple, Iterable
+from typing import List, NamedTuple, Union, Tuple, Iterable, Optional
+from math import inf
+from itertools import islice
+
+Num = Union[float, int]
 
 
 class Point(NamedTuple):
@@ -32,14 +36,32 @@ class Line:
     def __init__(self, a: AnyPoint, b: AnyPoint) -> None:
         self.a = Point(*a)
         self.b = Point(*b)
-        self.slope = (self.a.y - self.b.y) / (self.a.x - self.b.x)
-        # y = m*x + b  ->  b = y - m*x
-        self.y_intercept = self.a.y - self.slope * self.a.x
+        self.vertical = self.a.x == self.b.x
+        self.horizontal = self.a.y == self.b.y
+        if self.horizontal:
+            self.slope: Num = 0
+            self.y_intercept: Optional[Num] = self.a.y
+        elif self.vertical:
+            self.slope = inf
+            self.y_intercept = None
+        else:
+            self.slope = (self.a.y - self.b.y) / (self.a.x - self.b.x)
+            # y = m*x + b  ->  b = y - m*x
+            self.y_intercept = self.a.y - self.slope * self.a.x
 
     def __contains__(self, point: AnyPoint) -> bool:
-        # Does Y == m*X + b?
         point_ = Point(*point)
-        return point_.y == self.slope * point_.x + self.y_intercept
+        if self.vertical:
+            return point_.x == self.a.x
+        elif self.horizontal:
+            return point_.y == self.y_intercept
+        elif not self.y_intercept is None:
+            # Does Y == m*X + b?
+            return point_.y == self.slope * point_.x + self.y_intercept
+        else:
+            raise Exception(
+                f"self.y_intercept is None and line isn't horizontal or vertical:\nself: {self!r}\npoint: {point}"
+            )
 
     def __repr__(self) -> str:
         return f"Line(a=({self.a.x}, {self.a.y}), b=({self.b.x}, {self.b.y}))"
@@ -47,7 +69,7 @@ class Line:
 
 class Solution:
     def points(self, coordinates: List[List[int]]) -> Iterable[Point]:
-        for (x, y) in coordinates:
+        for (x, y) in [tuple(islice(coords, 2)) for coords in coordinates]:
             yield Point(x=x, y=y)
 
     def checkStraightLine(self, coordinates: List[List[int]]) -> bool:
