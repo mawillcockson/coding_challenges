@@ -27,17 +27,54 @@ Constraints:
 # https://leetcode.com/submissions/detail/341917485/?from=/explore/challenge/card/may-leetcoding-challenge/535/week-2-may-8th-may-14th/3324/
 
 from math import floor
+from typing import Dict, List
 from time import sleep
 
 
 class Solution:
+    cache: Dict[int, int] = dict()
+
     def isPerfectSquare(self, num: int) -> bool:
-        x = num
+        if num <= 1:
+            return True
+
         step = lambda x: floor((x + floor(num / x)) / 2)
-        while abs(x - (x := step(x))) >= 1:
+
+        chain: List[int] = list()
+
+        def sqrt(x: int) -> int:
+
             print(f"{x}")
             sleep(1)
-            continue
 
-        return x ** 2 == num
+            if x in self.cache:
+                return self.cache[x]
+            elif abs(x - (x := step(x))) <= 1:
+                for n in chain:
+                    self.cache[n] = x
+                chain.clear()
+                self.cache[num] = x
+                return x
+            else:
+                chain.append(x)
+                return sqrt(step(x))
 
+        return sqrt(num) ** 2 == num
+
+
+# Testing
+from collections import defaultdict
+from typing import DefaultDict
+from math import ceil, sqrt
+
+is_square = Solution().isPerfectSquare
+max_sqrt = ceil(sqrt(2 ** 31 - 1))
+squares: DefaultDict[int, bool] = defaultdict(bool)
+for num in range(max_sqrt):
+    squares[num ** 2] = True
+
+for num in range(2 ** 31 - 1):
+    if num % 1000 == 0:
+        print(f"Checking {num}")
+    if is_square(num) != squares[num]:
+        print(f"Should return {squares[num]}: {num}")
