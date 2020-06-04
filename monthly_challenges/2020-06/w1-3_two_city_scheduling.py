@@ -46,18 +46,40 @@ Note:
 from collections import Counter, deque
 from math import floor
 from random import randint
-from typing import Callable, Deque, Dict, List, Tuple, TypedDict
+from typing import Callable, Deque, Dict, List, Tuple, TypeVar
 from warnings import warn
 
+City = TypeVar("City", int)
+Cost = TypeVar("Cost", int)
+Prices = Dict[City, Cost]
+Id = TypeVar("Id", int)
 
-class Candidate(TypedDict):
-    prices: List[int]
-    city: int
-    index: int
+class Candidate:
+    def __init__(self, prices: Prices, id: ID, city: Optional[City] = None) -> None:
+        self.prices = prices
+        self.id = id
+        if city is not None:
+            self._city = city
+        else:
+            self._city = self.best_of(self.prices.keys())
+
+    def best_of(self, cities: List[City]) -> City:
+        pass
+
+    @property
+    def city(self) -> City:
+        return self._city
+
+    @city.setter
+    def city(self, val: City) -> None:
+        if val not in self.prices:
+            raise ValueError(f"'{val}' not a city {self} can fly to")
+
+        self._city = val
 
 
-Candidates = Dict[int, Candidate]
-
+class Candidates:
+    pass
 
 def candidate_cost(candidate: Candidate) -> int:
     return candidate["prices"][candidate["city"]]
@@ -132,11 +154,42 @@ def candidate_choices(costs: List[List[int]]) -> Candidates:
     return candidates
 
 
+def costs_to_prices(costs: List[Cost]) -> Prices:
+    return {City(city):Cost(cost) for city,cost in zip(range(len(prices)), prices)}
+
+
 class Solution:
     def twoCitySchedCost(self, costs: List[List[int]]) -> int:
-        candidates = candidate_choices(costs)
+        """
+        The general balancing algorithm I'm trying to implement is:
 
-        return sum(map(candidate_cost, candidates.values()))
+        - Assign candidates to each's most cost-effective city
+        - Find any cities with an excess or dearth of candidates
+        - Sort candidates in excess by the cost of flying them to dearth cities
+        - Move candidates, one at a time, from excess to dearth
+        - Each time a candidate is moved, recalculate dearth cities and re-sort
+          candidates
+        - When no more dearth, sum costs of each candidate
+        """
+        candidates = Candidates()
+        for candidate, prices in enumerate(costs):
+            candidates.add(id=Id(candidate), prices=costs_to_prices(prices))
+
+        excess = candidates.excess()
+        dearth = candidates.dearth()
+        excess.sort(dearth)
+        while excess:
+            candidate = excess.pop()
+            if not dearth:
+                break
+            candidate.city = candidate.best_of(dearth)
+            dearth = candidates.dearth()
+            excess.sort(dearth)
+
+        if not excess:
+            return candidates.total_cost
+        else:
+            raise ValueError(f"Somehow still in excess:\n{excess}\n{dearth}\n{candidates}")
 
 
 # Testing
