@@ -38,10 +38,22 @@ Constraints:
 - grid[i][j] is '0' or '1'.
 """
 
+import random
 import sys
 from copy import copy
 from itertools import chain
-from typing import List, NamedTuple, NewType, Sequence, Set, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Dict,
+    List,
+    NamedTuple,
+    NewType,
+    Optional,
+    Sequence,
+    Set,
+    TypeVar,
+    Union,
+)
 
 T = TypeVar("T")
 Sea = List[List[str]]
@@ -53,6 +65,32 @@ class Coordinate(NamedTuple):
 
 
 Island = NewType("Island", Set[Coordinate])
+Color = NewType("Color", str)
+
+DEBUGGING = True
+
+if DEBUGGING or TYPE_CHECKING:
+    import rich
+    from rich.color import ANSI_COLOR_NAMES
+
+    distinct_color_names = [
+        "dodger_blue2",
+        "green3",
+        "deep_sky_blue1",
+        "dark_red",
+        "deep_pink4",
+        "purple4",
+        "red3",
+        "dark_orange3",
+        "magenta2",
+        "light_cyan1",
+        "gold1",
+    ]
+    random_colors: List[Color] = []
+    for color_name in distinct_color_names:
+        assert color_name in ANSI_COLOR_NAMES, f"{color_name} not an ANSI color name"
+        random_colors.append(Color(color_name))
+    random.shuffle(random_colors)
 
 
 def number_of_islands(sea: Sea) -> int:
@@ -73,6 +111,12 @@ def number_of_islands(sea: Sea) -> int:
 
         if row_index == 0:
             islands = [Island({land}) for land in new_land]
+
+            if DEBUGGING:
+                island_colors: Dict[int, Color] = {}
+                for island_index in range(len(islands)):
+                    island_colors[island_index] = random_colors.pop()
+
             continue
 
         # is any new land adjacent to current islands?
@@ -82,19 +126,34 @@ def number_of_islands(sea: Sea) -> int:
             above_coordinate = Coordinate(land.row - 1, land.column)
 
             new_islands = copy(islands)
-            adjacent_islands: List[Island] = []
+            adjacent_island_indeces: List[int] = []
             for island_index, island in enumerate(islands):
                 if (
                     left_coordinate in island
                     or right_coordinate in island
                     or above_coordinate in island
                 ):
-                    adjacent_islands.append(island)
+                    adjacent_island_indeces.append(island_index)
                     new_islands.pop(island_index)
 
-            new_island = Island(set(chain.from_iterable(adjacent_islands)))
-            new_islands.append(new_island)
-            islands = new_islands
+            if adjacent_island_indeces:
+                if DEBUGGING:
+                    new_island_index = len(new_islands)
+                    first_color = island_colors[adjacent_island_indeces[0]]
+                    for island_index in adjacent_island_indeces:
+                        del island_colors[island_index]
+                    island_colors[new_island_index] = first_color
+
+                new_island = Island(
+                    set(
+                        chain.from_iterable(
+                            islands[island_index]
+                            for island_index in adjacent_island_indeces
+                        )
+                    )
+                )
+                new_islands.append(new_island)
+                islands = new_islands
 
     return len(islands)
 
