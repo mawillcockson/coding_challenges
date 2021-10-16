@@ -113,30 +113,6 @@ if DEBUGGING or TYPE_CHECKING:
 
         return random_color
 
-    # def show_sea_progress(
-    #     sea: Sea,
-    #     islands: List[Island],
-    #     island_colors: Dict[int, Color],
-    #     width: int,
-    #     current_row_index: int,
-    # ) -> None:
-    #     point_colors: Dict[Coordinate, Color] = {}
-    #     for island_index, island in enumerate(islands):
-    #         color = island_colors[island_index]
-    #         point_colors.update((coordinate, color) for coordinate in island)
-    #     for row_index, row in enumerate(sea):
-    #         for column_index, value in enumerate(row):
-    #             coordinate = Coordinate(row_index, column_index)
-    #             color = point_colors.get(coordinate, Color("black"))
-    #             rich.print(f"[white on {color}] [/white on {color}]", end="")
-
-    #         if current_row_index == row_index:
-    #             print("<")
-    #         else:
-    #             print("")
-
-    #     print("-" * width)
-
     class IslandAndColor(NamedTuple):
         island: Island
         color: Color
@@ -161,9 +137,9 @@ if DEBUGGING or TYPE_CHECKING:
         def from_sea(cls, sea: Sea) -> "SeaTable":
             grid = cls.make_grid()
             width = len(sea[0])
-            print(f"width -> {width}")
+            # print(f"width -> {width}")
             height = len(sea)
-            print(f"height -> {height}")
+            # print(f"height -> {height}")
 
             for _ in range(width):
                 grid.add_column()
@@ -175,16 +151,11 @@ if DEBUGGING or TYPE_CHECKING:
             return grid
 
         def remove_duplicate_islands(self) -> None:
-            unique_islands: Set[IslandAndColor] = set()
-            duplicate_island_indeces: List[int] = []
-            for island_index, island_and_color in enumerate(self.island_colors):
-                old_len = len(unique_islands)
-                unique_islands.add(island_and_color)
-                if len(unique_islands) == old_len:
-                    duplicate_island_indeces.append(island_index)
-
-            for index in reversed(duplicate_island_indeces):
-                self.island_colors.pop(index)
+            unique_islands: List[IslandAndColor] = []
+            for island_and_color in self.island_colors:
+                if island_and_color in unique_islands:
+                    continue
+                unique_islands.append(island_and_color)
 
         def update_colors(self) -> None:
             coordinates_and_colors: DefaultDict[Coordinate, Color] = defaultdict(
@@ -206,7 +177,8 @@ if DEBUGGING or TYPE_CHECKING:
             for new_island in islands:
                 merge_island_indeces: List[int] = []
                 for (island_index, (island, color)) in enumerate(self.island_colors):
-                    if island.issubset(new_island):
+                    # does new_island contain all of island's elements, and more?
+                    if island < new_island:
                         self.island_colors[island_index] = IslandAndColor(
                             new_island, color
                         )
