@@ -38,6 +38,7 @@ Constraints:
 - grid[i][j] is '0' or '1'.
 """
 
+import sys
 from copy import copy
 from itertools import chain
 from typing import List, NamedTuple, NewType, Sequence, Set, TypeVar, Union
@@ -124,10 +125,31 @@ if __name__ == "__main__":
             ],
             5,
         ),
+        TestCase(
+            [
+                [1, 1, 1],
+                [1, 1, 1],
+                [1, 1, 1],
+            ],
+            1,
+        ),
+        TestCase(
+            [
+                [1],
+            ],
+            1,
+        ),
     ]
 
     for test in test_cases:
-        assert number_of_islands(stringify(test.case)) == test.correct_answer
+        answer = number_of_islands(stringify(test.case))
+        if answer != test.correct_answer:
+            print("[")
+            for row in test.case:
+                print(f" {row}")
+            print("]")
+            print(f"incorrect: {answer}")
+            sys.exit(1)
 
     print("tests passed")
 
