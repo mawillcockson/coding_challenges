@@ -80,7 +80,11 @@ if DEBUGGING or TYPE_CHECKING:
     import rich.traceback
     from rich.color import ANSI_COLOR_NAMES
     from rich.console import Console
+    from rich.pretty import pprint
     from rich.table import Table
+
+    class TestFailure(Exception):
+        pass
 
     rich.traceback.install(show_locals=True)
 
@@ -252,10 +256,9 @@ def number_of_islands(sea: Sea) -> int:
 
                 islands.append(Island({land}))
 
-        if DEBUGGING:
-            sea_table.update_islands(islands, random_color=random_color)
-            rich.print(sea_table)
-            print("-" * width)
+    if DEBUGGING:
+        sea_table.update_islands(islands, random_color=random_color)
+        rich.print(sea_table)
 
     return len(islands)
 
@@ -263,7 +266,7 @@ def number_of_islands(sea: Sea) -> int:
 if __name__ == "__main__":
 
     def stringify(ints: Union[List[List[int]], Sea]) -> Sea:
-        return [[str(value) for value in row] for row in ints]
+        return [["1" if value else "0" for value in row] for row in ints]
 
     class TestCase(NamedTuple):
         case: Union[List[List[int]], Sea]
@@ -319,7 +322,18 @@ if __name__ == "__main__":
                 [0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0],
                 [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
             ],
-            2,
+            3,
+        ),
+        TestCase(
+            [
+                [1, 0, 1, 0, 1],
+                [1, 0, 1, 0, 1],
+                [1, 0, 1, 0, 1],
+                [1, 0, 1, 0, 1],
+                [1, 0, 1, 0, 1],
+                [1, 1, 1, 1, 1],
+            ],
+            1,
         ),
     ]
 
@@ -334,7 +348,7 @@ if __name__ == "__main__":
         answer = number_of_islands(stringify(test.case))
         if answer != test.correct_answer:
             if DEBUGGING:
-                pass
+                raise TestFailure
             else:
                 print("[")
                 for row in test.case:
@@ -345,7 +359,7 @@ if __name__ == "__main__":
 
     message = "tests passed"
     if DEBUGGING:
-        console.rule(message, style="bold green")
+        console.rule(message)
     else:
         print(message)
 
