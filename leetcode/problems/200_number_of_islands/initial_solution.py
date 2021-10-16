@@ -1,7 +1,8 @@
 from copy import copy
 from itertools import chain
-from typing import List, NamedTuple, NewType, Set
+from typing import List, NamedTuple, NewType, Sequence, Set, TypeVar
 
+T = TypeVar("T")
 Sea = List[List[str]]
 
 
@@ -17,7 +18,9 @@ def number_of_islands(sea: Sea) -> int:
     number_of_rows = len(sea)
     assert number_of_rows >= 1, "empty sea"
     width = len(sea[0])
-    assert all(map(lambda row: len(row) == width, sea)), "non-rectangular sea" 
+
+    for row in sea:
+        assert len(row) == width, "non-rectangular sea"
 
     islands: List[Island]
 
@@ -28,7 +31,7 @@ def number_of_islands(sea: Sea) -> int:
                 new_land.add(Coordinate(row_index, column_index))
 
         if row_index == 0:
-            islands = [Island(land) for land in new_land]
+            islands = [Island({land}) for land in new_land]
             continue
 
         # is any new land adjacent to current islands?
@@ -38,7 +41,6 @@ def number_of_islands(sea: Sea) -> int:
             above_coordinate = Coordinate(land.row - 1, land.column)
 
             new_islands = copy(islands)
-            adjacent_islands = [island for island in enumerate(islands)]
             adjacent_islands: List[Island] = []
             for island_index, island in enumerate(islands):
                 if (
@@ -47,7 +49,7 @@ def number_of_islands(sea: Sea) -> int:
                     or above_coordinate in island
                 ):
                     adjacent_islands.append(island)
-                    new_islands.remove(island_index)
+                    new_islands.pop(island_index)
 
             new_island = Island(set(chain.from_iterable(adjacent_islands)))
             new_islands.append(new_island)
@@ -58,8 +60,8 @@ def number_of_islands(sea: Sea) -> int:
 
 if __name__ == "__main__":
 
-    def stringify(ints: List[List[ints]]) -> Sea:
-        return [str(value) for row in ints for value in row]
+    def stringify(ints: List[List[int]]) -> Sea:
+        return [[str(value) for value in row] for row in ints]
 
     assert (
         number_of_islands(
