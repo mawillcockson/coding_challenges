@@ -179,13 +179,15 @@ if DEBUGGING or TYPE_CHECKING:
             self, islands: Iterable[Island], random_color: Callable[[], Color]
         ) -> None:
             for new_island in islands:
+                subsset = False
                 for (island_index, (island, color)) in enumerate(self.island_colors):
-                    # does new_island contain all of island's elements, and more?
-                    if island < new_island:
+                    if island.issubset(new_island):
                         self.island_colors[island_index] = IslandAndColor(
                             new_island, color
                         )
-                else:
+                        subsset = True
+
+                if not subsset:
                     self.island_colors.append(
                         IslandAndColor(new_island, random_color())
                     )
@@ -340,8 +342,6 @@ if __name__ == "__main__":
                 print("]")
                 print(f"incorrect: {answer}")
             sys.exit(1)
-
-        sys.exit(0)
 
     message = "tests passed"
     if DEBUGGING:
