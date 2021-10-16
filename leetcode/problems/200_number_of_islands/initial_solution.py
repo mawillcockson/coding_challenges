@@ -113,7 +113,7 @@ if DEBUGGING or TYPE_CHECKING:
             color = island_colors[island_index]
             point_colors.update((coordinate, color) for coordinate in island)
         for row_index, row in enumerate(sea):
-            for column_index, value in enumerate(sea):
+            for column_index, value in enumerate(row):
                 coordinate = Coordinate(row_index, column_index)
                 color = point_colors.get(coordinate, Color("black"))
                 rich.print(f"[white on {color}] [/white on {color}]", end="")
@@ -166,7 +166,7 @@ def number_of_islands(sea: Sea) -> int:
                     island_colors[new_island_index] = first_color
                     for island_index in adjacent_island_indeces:
                         del island_colors[island_index]
-                    rich.print(island_colors)
+                    # rich.print(island_colors)
                     island_colors = dict(
                         zip(
                             range(len(island_colors)),
@@ -176,7 +176,7 @@ def number_of_islands(sea: Sea) -> int:
                             ),
                         )
                     )
-                    rich.print(island_colors)
+                    # rich.print(island_colors)
 
                 adjacent_island_indeces.append(len(islands))
                 islands.append(Island({land}))
@@ -198,7 +198,7 @@ def number_of_islands(sea: Sea) -> int:
                     new_island_index = len(islands)
                     color = random_color()
                     island_colors[new_island_index] = color
-                    print(island_colors)
+                    # print(island_colors)
 
                 islands.append(Island({land}))
 
