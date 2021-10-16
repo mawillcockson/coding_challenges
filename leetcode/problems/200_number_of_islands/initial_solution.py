@@ -163,9 +163,20 @@ def number_of_islands(sea: Sea) -> int:
                 if DEBUGGING:
                     new_island_index = len(islands) - len(adjacent_island_indeces) + 1
                     first_color = island_colors[adjacent_island_indeces[0]]
+                    island_colors[new_island_index] = first_color
                     for island_index in adjacent_island_indeces:
                         del island_colors[island_index]
-                    island_colors[new_island_index] = first_color
+                    rich.print(island_colors)
+                    island_colors = dict(
+                        zip(
+                            range(len(island_colors)),
+                            (
+                                color
+                                for island_index, color in sorted(island_colors.items())
+                            ),
+                        )
+                    )
+                    rich.print(island_colors)
 
                 adjacent_island_indeces.append(len(islands))
                 islands.append(Island({land}))
@@ -187,6 +198,7 @@ def number_of_islands(sea: Sea) -> int:
                     new_island_index = len(islands)
                     color = random_color()
                     island_colors[new_island_index] = color
+                    print(island_colors)
 
                 islands.append(Island({land}))
 
@@ -242,6 +254,13 @@ if __name__ == "__main__":
                 [1],
             ],
             1,
+        ),
+        TestCase(
+            [
+                [1, 1, 0],
+                [0, 0, 1],
+            ],
+            2,
         ),
     ]
 
