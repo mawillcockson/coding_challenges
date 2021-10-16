@@ -46,6 +46,7 @@ from typing import (
     TYPE_CHECKING,
     Callable,
     Dict,
+    Iterable,
     List,
     NamedTuple,
     NewType,
@@ -71,8 +72,19 @@ Color = NewType("Color", str)
 DEBUGGING = True
 
 if DEBUGGING or TYPE_CHECKING:
+    from collections import defaultdict
+    from itertools import repeat
+    from typing import DefaultDict
+
     import rich
+    import rich.traceback
     from rich.color import ANSI_COLOR_NAMES
+    from rich.console import Console
+    from rich.table import Table
+
+    rich.traceback.install(show_locals=True)
+
+    console = Console()
 
     distinct_color_names = [
         "dodger_blue2",
@@ -101,29 +113,111 @@ if DEBUGGING or TYPE_CHECKING:
 
         return random_color
 
-    def show_sea_progress(
-        sea: Sea,
-        islands: List[Island],
-        island_colors: Dict[int, Color],
-        width: int,
-        current_row_index: int,
-    ) -> None:
-        point_colors: Dict[Coordinate, Color] = {}
-        for island_index, island in enumerate(islands):
-            color = island_colors[island_index]
-            point_colors.update((coordinate, color) for coordinate in island)
-        for row_index, row in enumerate(sea):
-            for column_index, value in enumerate(row):
-                coordinate = Coordinate(row_index, column_index)
-                color = point_colors.get(coordinate, Color("black"))
-                rich.print(f"[white on {color}] [/white on {color}]", end="")
+    # def show_sea_progress(
+    #     sea: Sea,
+    #     islands: List[Island],
+    #     island_colors: Dict[int, Color],
+    #     width: int,
+    #     current_row_index: int,
+    # ) -> None:
+    #     point_colors: Dict[Coordinate, Color] = {}
+    #     for island_index, island in enumerate(islands):
+    #         color = island_colors[island_index]
+    #         point_colors.update((coordinate, color) for coordinate in island)
+    #     for row_index, row in enumerate(sea):
+    #         for column_index, value in enumerate(row):
+    #             coordinate = Coordinate(row_index, column_index)
+    #             color = point_colors.get(coordinate, Color("black"))
+    #             rich.print(f"[white on {color}] [/white on {color}]", end="")
 
-            if current_row_index == row_index:
-                print("<")
-            else:
-                print("")
+    #         if current_row_index == row_index:
+    #             print("<")
+    #         else:
+    #             print("")
 
-        print("-" * width)
+    #     print("-" * width)
+
+    class IslandAndColor(NamedTuple):
+        island: Island
+        color: Color
+
+    class SeaTable(Table):
+        island_colors: List[IslandAndColor]
+
+        @classmethod
+        def make_grid(cls) -> "SeaTable":
+            return cls(
+                box=None,
+                padding=0,
+                collapse_padding=True,
+                show_header=False,
+                show_footer=False,
+                show_edge=False,
+                pad_edge=False,
+                expand=False,
+            )
+
+        @classmethod
+        def from_sea(cls, sea: Sea) -> "SeaTable":
+            grid = cls.make_grid()
+            width = len(sea[0])
+            print(f"width -> {width}")
+            height = len(sea)
+            print(f"height -> {height}")
+
+            for _ in range(width):
+                grid.add_column()
+            for _ in range(height):
+                grid.add_row(*[" "] * width, style="white on black")
+
+            grid.island_colors = []
+
+            return grid
+
+        def remove_duplicate_islands(self) -> None:
+            unique_islands: Set[IslandAndColor] = set()
+            duplicate_island_indeces: List[int] = []
+            for island_index, island_and_color in enumerate(self.island_colors):
+                old_len = len(unique_islands)
+                unique_islands.add(island_and_color)
+                if len(unique_islands) == old_len:
+                    duplicate_island_indeces.append(island_index)
+
+            for index in reversed(duplicate_island_indeces):
+                self.island_colors.pop(index)
+
+        def update_colors(self) -> None:
+            coordinates_and_colors: DefaultDict[Coordinate, Color] = defaultdict(
+                lambda: Color("black")
+            )
+            for island, color in self.island_colors:
+                coordinates_and_colors.update(zip(island, repeat(color)))
+
+            for column_index, column in enumerate(self.columns):
+                for row_index, _ in enumerate(column._cells):
+                    coordinate = Coordinate(row_index, column_index)
+                    column._cells[
+                        row_index
+                    ] = f"[white on {coordinates_and_colors[coordinate]}] [/]"
+
+        def update_islands(
+            self, islands: Iterable[Island], random_color: Callable[[], Color]
+        ) -> None:
+            for new_island in islands:
+                merge_island_indeces: List[int] = []
+                for (island_index, (island, color)) in enumerate(self.island_colors):
+                    if island.issubset(new_island):
+                        self.island_colors[island_index] = IslandAndColor(
+                            new_island, color
+                        )
+                else:
+                    self.island_colors.append(
+                        IslandAndColor(new_island, random_color())
+                    )
+
+            self.remove_duplicate_islands()
+
+            self.update_colors()
 
 
 def number_of_islands(sea: Sea) -> int:
@@ -135,9 +229,12 @@ def number_of_islands(sea: Sea) -> int:
         assert len(row) == width, "non-rectangular sea"
 
     islands: List[Island] = []
+
     if DEBUGGING:
         random_color = new_random_color_gen()
-        island_colors: Dict[int, Color] = {0: random_color()}
+        # island_colors: Dict[int, Color] = {0: random_color()}
+        sea_table = SeaTable.from_sea(sea)
+
     for row_index, row in enumerate(sea):
         # is any new land adjacent to current islands?
         for column_index, value in enumerate(row):
@@ -160,24 +257,6 @@ def number_of_islands(sea: Sea) -> int:
 
             if adjacent_island_indeces:
 
-                if DEBUGGING:
-                    new_island_index = len(islands) - len(adjacent_island_indeces) + 1
-                    first_color = island_colors[adjacent_island_indeces[0]]
-                    island_colors[new_island_index] = first_color
-                    for island_index in adjacent_island_indeces:
-                        del island_colors[island_index]
-                    # rich.print(island_colors)
-                    island_colors = dict(
-                        zip(
-                            range(len(island_colors)),
-                            (
-                                color
-                                for island_index, color in sorted(island_colors.items())
-                            ),
-                        )
-                    )
-                    # rich.print(island_colors)
-
                 adjacent_island_indeces.append(len(islands))
                 islands.append(Island({land}))
                 new_island = Island(
@@ -194,23 +273,13 @@ def number_of_islands(sea: Sea) -> int:
 
             else:
 
-                if DEBUGGING:
-                    new_island_index = len(islands)
-                    color = random_color()
-                    island_colors[new_island_index] = color
-                    # print(island_colors)
-
                 islands.append(Island({land}))
 
         if DEBUGGING:
-            show_sea_progress(
-                sea=sea,
-                islands=islands,
-                island_colors=island_colors,
-                width=width,
-                current_row_index=row_index,
-            )
-            # print(islands)
+            rich.print(islands)
+            sea_table.update_islands(islands, random_color=random_color)
+            rich.print(sea_table)
+            print("-" * width)
 
     return len(islands)
 
@@ -279,17 +348,32 @@ if __name__ == "__main__":
     ]
 
     for test_number, test in enumerate(test_cases):
-        print(f"test #{test_number + 1}")
+
+        header = f"test #{test_number + 1}"
+        if DEBUGGING:
+            console.rule(header)
+        else:
+            print(header)
+
         answer = number_of_islands(stringify(test.case))
         if answer != test.correct_answer:
-            print("[")
-            for row in test.case:
-                print(f" {row}")
-            print("]")
-            print(f"incorrect: {answer}")
+            if DEBUGGING:
+                pass
+            else:
+                print("[")
+                for row in test.case:
+                    print(f" {row}")
+                print("]")
+                print(f"incorrect: {answer}")
             sys.exit(1)
 
-    print("tests passed")
+        sys.exit(0)
+
+    message = "tests passed"
+    if DEBUGGING:
+        console.rule(message, style="bold green")
+    else:
+        print(message)
 
 
 class Solution:
