@@ -151,11 +151,15 @@ if DEBUGGING or TYPE_CHECKING:
             return grid
 
         def remove_duplicate_islands(self) -> None:
-            unique_islands: List[IslandAndColor] = []
-            for island_and_color in self.island_colors:
-                if island_and_color in unique_islands:
-                    continue
-                unique_islands.append(island_and_color)
+            unique_islands: List[Island] = []
+            duplicate_island_indeces: List[int] = []
+            for island_index, (island, color) in enumerate(self.island_colors):
+                if island in unique_islands:
+                    duplicate_island_indeces.append(island_index)
+                unique_islands.append(island)
+
+            for index in reversed(duplicate_island_indeces):
+                self.island_colors.pop(index)
 
         def update_colors(self) -> None:
             coordinates_and_colors: DefaultDict[Coordinate, Color] = defaultdict(
@@ -175,7 +179,6 @@ if DEBUGGING or TYPE_CHECKING:
             self, islands: Iterable[Island], random_color: Callable[[], Color]
         ) -> None:
             for new_island in islands:
-                merge_island_indeces: List[int] = []
                 for (island_index, (island, color)) in enumerate(self.island_colors):
                     # does new_island contain all of island's elements, and more?
                     if island < new_island:
@@ -248,7 +251,6 @@ def number_of_islands(sea: Sea) -> int:
                 islands.append(Island({land}))
 
         if DEBUGGING:
-            rich.print(islands)
             sea_table.update_islands(islands, random_color=random_color)
             rich.print(sea_table)
             print("-" * width)
