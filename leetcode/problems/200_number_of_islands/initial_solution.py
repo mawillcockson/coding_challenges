@@ -44,6 +44,7 @@ from copy import copy
 from itertools import chain
 from typing import (
     TYPE_CHECKING,
+    Callable,
     Dict,
     List,
     NamedTuple,
@@ -92,6 +93,14 @@ if DEBUGGING or TYPE_CHECKING:
         random_colors.append(Color(color_name))
     random.shuffle(random_colors)
 
+    def new_random_color_gen() -> Callable[[], Color]:
+        random_color_iter = iter(random_colors)
+
+        def random_color() -> Color:
+            return next(random_color_iter)
+
+        return random_color
+
     def show_sea_progress(
         sea: Sea,
         islands: List[Island],
@@ -125,39 +134,21 @@ def number_of_islands(sea: Sea) -> int:
     for row in sea:
         assert len(row) == width, "non-rectangular sea"
 
-    islands: List[Island]
-
+    islands: List[Island] = []
+    if DEBUGGING:
+        random_color = new_random_color_gen()
+        island_colors: Dict[int, Color] = {0: random_color()}
     for row_index, row in enumerate(sea):
-        new_land: Set[Coordinate] = set()
-        for column_index, value in enumerate(row):
-            if int(value):
-                new_land.add(Coordinate(row_index, column_index))
-
-        if row_index == 0:
-            islands = [Island({land}) for land in new_land]
-
-            if DEBUGGING:
-                island_colors: Dict[int, Color] = {}
-                for island_index in range(len(islands)):
-                    island_colors[island_index] = random_colors.pop()
-
-                show_sea_progress(
-                    sea=sea,
-                    islands=islands,
-                    island_colors=island_colors,
-                    width=width,
-                    current_row_index=row_index,
-                )
-
-            continue
-
         # is any new land adjacent to current islands?
-        for land in new_land:
+        for column_index, value in enumerate(row):
+            if not int(value):
+                continue
+
+            land = Coordinate(row_index, column_index)
             left_coordinate = Coordinate(land.row, land.column + 1)
             right_coordinate = Coordinate(land.row, land.column - 1)
             above_coordinate = Coordinate(land.row - 1, land.column)
 
-            new_islands = copy(islands)
             adjacent_island_indeces: List[int] = []
             for island_index, island in enumerate(islands):
                 if (
@@ -166,16 +157,18 @@ def number_of_islands(sea: Sea) -> int:
                     or above_coordinate in island
                 ):
                     adjacent_island_indeces.append(island_index)
-                    new_islands.pop(island_index)
 
             if adjacent_island_indeces:
+
                 if DEBUGGING:
-                    new_island_index = len(new_islands)
+                    new_island_index = len(islands) - len(adjacent_island_indeces) + 1
                     first_color = island_colors[adjacent_island_indeces[0]]
                     for island_index in adjacent_island_indeces:
                         del island_colors[island_index]
                     island_colors[new_island_index] = first_color
 
+                adjacent_island_indeces.append(len(islands))
+                islands.append(Island({land}))
                 new_island = Island(
                     set(
                         chain.from_iterable(
@@ -184,12 +177,15 @@ def number_of_islands(sea: Sea) -> int:
                         )
                     )
                 )
-                new_islands.append(new_island)
-                islands = new_islands
+                for island_index in reversed(adjacent_island_indeces):
+                    islands.pop(island_index)
+                islands.append(new_island)
+
             else:
+
                 if DEBUGGING:
                     new_island_index = len(islands)
-                    color = random_colors.pop()
+                    color = random_color()
                     island_colors[new_island_index] = color
 
                 islands.append(Island({land}))
@@ -202,6 +198,7 @@ def number_of_islands(sea: Sea) -> int:
                 width=width,
                 current_row_index=row_index,
             )
+            # print(islands)
 
     return len(islands)
 
