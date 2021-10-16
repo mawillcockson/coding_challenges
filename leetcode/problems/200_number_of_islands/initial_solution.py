@@ -92,6 +92,30 @@ if DEBUGGING or TYPE_CHECKING:
         random_colors.append(Color(color_name))
     random.shuffle(random_colors)
 
+    def show_sea_progress(
+        sea: Sea,
+        islands: List[Island],
+        island_colors: Dict[int, Color],
+        width: int,
+        current_row_index: int,
+    ) -> None:
+        point_colors: Dict[Coordinate, Color] = {}
+        for island_index, island in enumerate(islands):
+            color = island_colors[island_index]
+            point_colors.update((coordinate, color) for coordinate in island)
+        for row_index, row in enumerate(sea):
+            for column_index, value in enumerate(sea):
+                coordinate = Coordinate(row_index, column_index)
+                color = point_colors.get(coordinate, Color("black"))
+                rich.print(f"[white on {color}] [/white on {color}]", end="")
+
+            if current_row_index == row_index:
+                print("<")
+            else:
+                print("")
+
+        print("-" * width)
+
 
 def number_of_islands(sea: Sea) -> int:
     number_of_rows = len(sea)
@@ -116,6 +140,14 @@ def number_of_islands(sea: Sea) -> int:
                 island_colors: Dict[int, Color] = {}
                 for island_index in range(len(islands)):
                     island_colors[island_index] = random_colors.pop()
+
+                show_sea_progress(
+                    sea=sea,
+                    islands=islands,
+                    island_colors=island_colors,
+                    width=width,
+                    current_row_index=row_index,
+                )
 
             continue
 
@@ -154,6 +186,22 @@ def number_of_islands(sea: Sea) -> int:
                 )
                 new_islands.append(new_island)
                 islands = new_islands
+            else:
+                if DEBUGGING:
+                    new_island_index = len(islands)
+                    color = random_colors.pop()
+                    island_colors[new_island_index] = color
+
+                islands.append(Island({land}))
+
+        if DEBUGGING:
+            show_sea_progress(
+                sea=sea,
+                islands=islands,
+                island_colors=island_colors,
+                width=width,
+                current_row_index=row_index,
+            )
 
     return len(islands)
 
@@ -200,7 +248,8 @@ if __name__ == "__main__":
         ),
     ]
 
-    for test in test_cases:
+    for test_number, test in enumerate(test_cases):
+        print(f"test #{test_number + 1}")
         answer = number_of_islands(stringify(test.case))
         if answer != test.correct_answer:
             print("[")
