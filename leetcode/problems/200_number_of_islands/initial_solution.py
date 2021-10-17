@@ -37,31 +37,16 @@ Constraints:
 - 1 <= m, n <= 300
 - grid[i][j] is '0' or '1'.
 """
+# pylint: disable=redefined-outer-name,ungrouped-imports
 
 import random
 import sys
-from copy import copy
-from itertools import chain
-from typing import (
-    TYPE_CHECKING,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    NamedTuple,
-    NewType,
-    Optional,
-    Sequence,
-    Set,
-    TypeVar,
-    Union,
-)
-
-T = TypeVar("T")
-Sea = List[List[str]]
+from itertools import chain, repeat
+from typing import TYPE_CHECKING, NamedTuple, NewType, Set
 
 
 class Coordinate(NamedTuple):
+    "Cartesian coordinate"
     row: int
     column: int
 
@@ -69,16 +54,31 @@ class Coordinate(NamedTuple):
 Island = NewType("Island", Set[Coordinate])
 Color = NewType("Color", str)
 
+
+CONTEXT_MANAGER_TYPING_URL = (
+    "https://adamj.eu/tech/2021/07/04/"
+    "python-type-hints-how-to-type-a-context-manager/"
+    "#class-based-context-managers"
+)
+
 RICH = False
 DEBUGGING = RICH or False
 
 if RICH or TYPE_CHECKING:
     from collections import defaultdict
-    from contextlib import contextmanager
-    from itertools import repeat
     from time import sleep
     from types import TracebackType
-    from typing import ContextManager, DefaultDict, ForwardRef, Iterator, Type, cast
+    from typing import (
+        Callable,
+        ContextManager,
+        DefaultDict,
+        Iterable,
+        List,
+        Optional,
+        Type,
+        Union,
+        cast,
+    )
 
     import rich
     import rich.traceback
@@ -86,14 +86,19 @@ if RICH or TYPE_CHECKING:
     from rich.console import Console
     from rich.layout import Layout
     from rich.live import Live
-    from rich.pretty import pprint
     from rich.prompt import Prompt
     from rich.rule import Rule
     from rich.table import Table
     from rich.text import Text
 
+    Sea = List[List[str]]
+
     class TestFailure(Exception):
-        pass
+        """
+        unit test failure
+
+        mainly to get rich's tracebacks
+        """
 
     rich.traceback.install(show_locals=True)
 
@@ -119,23 +124,41 @@ if RICH or TYPE_CHECKING:
     random.shuffle(random_colors)
 
     def new_random_color_gen() -> Callable[[], Color]:
+        """
+        make a random color function
+
+        this can run out of colors
+        """
+        # iter() can be replaced with cycle(), but it's better to ensure unique
+        # colors
         random_color_iter = iter(random_colors)
 
         def random_color() -> Color:
+            "return next generator item"
             return next(random_color_iter)
 
         return random_color
 
     class IslandAndColor(NamedTuple):
+        """
+        collection of island and color
+
+        unhashable because of Island -> Set[...]
+        """
+
         island: Island
         color: Color
 
     class SeaTable(Table):
+        "main class for pretty-printing the status of number_of_islands()"
         island_colors: List[IslandAndColor]
         live: Optional[Live]
 
         @classmethod
         def make_grid(cls) -> "SeaTable":
+            """
+            override for super().grid() so we can return our own class
+            """
             return cls(
                 box=None,
                 padding=0,
@@ -149,6 +172,7 @@ if RICH or TYPE_CHECKING:
 
         @classmethod
         def from_sea(cls, sea: Sea) -> "SeaTable":
+            "the main way this class should be constructed"
             grid = cls.make_grid()
             width = len(sea[0])
             # if DEBUGGING:
@@ -170,9 +194,10 @@ if RICH or TYPE_CHECKING:
             return grid
 
         def remove_duplicate_islands(self) -> None:
+            "find matching islands and only keep the first"
             unique_islands: List[Island] = []
             duplicate_island_indeces: List[int] = []
-            for island_index, (island, color) in enumerate(self.island_colors):
+            for island_index, (island, _) in enumerate(self.island_colors):
                 if island in unique_islands:
                     duplicate_island_indeces.append(island_index)
                 unique_islands.append(island)
@@ -181,6 +206,7 @@ if RICH or TYPE_CHECKING:
                 self.island_colors.pop(index)
 
         def update_colors(self) -> None:
+            "re-apply island colors to grid"
             coordinate_color: DefaultDict[Coordinate, Color] = defaultdict(
                 lambda: Color("black")
             )
@@ -188,6 +214,7 @@ if RICH or TYPE_CHECKING:
                 coordinate_color.update(zip(island, repeat(color)))
 
             for column_index, column in enumerate(self.columns):
+                # pylint: disable=protected-access
                 for row_index, _ in enumerate(column._cells):
                     coordinate = Coordinate(row_index, column_index)
                     cell = cast(Text, column._cells[row_index])
@@ -198,6 +225,9 @@ if RICH or TYPE_CHECKING:
         def update_islands(
             self, islands: Iterable[Island], random_color: Callable[[], Color]
         ) -> None:
+            """
+            replace existing islands with the new larger ones
+            """
             for new_island in islands:
                 subsset = False
                 for (island_index, (island, color)) in enumerate(self.island_colors):
@@ -219,6 +249,7 @@ if RICH or TYPE_CHECKING:
             self.live_refresh()
 
         def live_refresh(self) -> None:
+            "refresh Rich's output"
             if self.live:
                 self.live.refresh()
                 if self.live.refresh_per_second:
@@ -230,6 +261,8 @@ if RICH or TYPE_CHECKING:
         def considering(
             self, land: Coordinate, coordinate: Coordinate
         ) -> ContextManager[None]:
+            # pylint: disable=no-self-use
+            "indicate which cells are being considered, and reset"
             if land.row == coordinate.row:
                 if land.column < coordinate.column:
                     land_character = ">"
@@ -254,6 +287,7 @@ if RICH or TYPE_CHECKING:
             width = len(self.columns)
             height = self.row_count
 
+            # pylint: disable=protected-access
             if (
                 0 <= coordinate.column <= width - 1
                 and 0 <= coordinate.row <= height - 1
@@ -280,10 +314,13 @@ if RICH or TYPE_CHECKING:
             self.live_refresh()
 
             class TempContextManager:
-                "https://adamj.eu/tech/2021/07/04/python-type-hints-how-to-type-a-context-manager/#class-based-context-managers"
+                # From CONTEXT_MANAGER_TYPING_URL
+                """
+                only exists because I can't get mypy to like contextmanager
+                """
 
                 def __enter__(self) -> None:
-                    pass
+                    "do nothing"
 
                 def __exit__(
                     self,
@@ -291,6 +328,7 @@ if RICH or TYPE_CHECKING:
                     exc_val: Optional[BaseException],
                     exc_tb: TracebackType,
                 ) -> None:
+                    "reset cell text"
                     coordinate_cell.plain = original_coordinate_text
                     land_cell.plain = original_land_text
 
@@ -299,22 +337,26 @@ if RICH or TYPE_CHECKING:
 
 if not RICH or TYPE_CHECKING:
     from types import TracebackType
-    from typing import Optional, Type
+    from typing import Type
 
     class FakeLive:
+        "dummy Live"
+
         def __enter__(self) -> None:
-            return None
+            "do nothing"
 
         def __exit__(
             self,
-            exc_type: Optional[Type[BaseException]],
-            exc_val: Optional[BaseException],
-            exc_tb: TracebackType,
+            exc_type: "Optional[Type[BaseException]]",
+            exc_val: "Optional[BaseException]",
+            exc_tb: "TracebackType",
         ) -> None:
-            pass
+            "do nothing"
 
 
-def number_of_islands(sea: Sea) -> int:
+def number_of_islands(sea: "Sea") -> int:
+    # pylint: disable=too-many-locals,too-many-branches
+    """count number of distinct groups of adjacent "1"'s"""
     number_of_rows = len(sea)
     assert number_of_rows >= 1, "empty sea"
     width = len(sea[0])
@@ -326,7 +368,6 @@ def number_of_islands(sea: Sea) -> int:
 
     if RICH:
         random_color = new_random_color_gen()
-        # island_colors: Dict[int, Color] = {0: random_color()}
 
     for row_index, row in enumerate(sea):
         # is any new land adjacent to current islands?
@@ -383,7 +424,8 @@ def number_of_islands(sea: Sea) -> int:
 
 if __name__ == "__main__":
 
-    def stringify(ints: Union[List[List[int]], Sea]) -> Sea:
+    def stringify(ints: "Union[List[List[int]], Sea]") -> "Sea":
+        "normalize test-case representations"
         return [
             [
                 "1" if (isinstance(value, str) and value != "0") or value else "0"
@@ -393,7 +435,8 @@ if __name__ == "__main__":
         ]
 
     class TestCase(NamedTuple):
-        case: Union[List[List[int]], Sea]
+        "test case and answer"
+        case: "Union[List[List[int]], Sea]"
         correct_answer: int
 
     test_cases = [
@@ -500,28 +543,33 @@ if __name__ == "__main__":
                 if isinstance(live, Live):
                     sea_table.live = live
 
-            answer = number_of_islands(sea)
+            ANSWER = number_of_islands(sea)
 
-        if answer != test.correct_answer:
+        if ANSWER != test.correct_answer:
+            # pylint: disable=no-else-raise
             if RICH:
                 rich.print(sea_table)
-                print(f"incorrect: {answer}")
+                print(f"incorrect: {ANSWER}")
                 raise TestFailure
             elif DEBUGGING:
                 print("[")
                 for row in test.case:
                     print(f" {row}")
                 print("]")
-                print(f"incorrect: {answer}")
+                print(f"incorrect: {ANSWER}")
             sys.exit(1)
 
-    message = "tests passed"
+    MESSAGE = "tests passed"
     if RICH:
-        console.rule(message)
+        console.rule(MESSAGE)
     elif DEBUGGING:
-        print(message)
+        print(MESSAGE)
 
 
 class Solution:
-    def numIslands(self, grid: List[List[str]]) -> int:
+    "required by leetcode"
+
+    # pylint: disable=invalid-name,no-self-use,too-few-public-methods
+    def numIslands(self, grid: "List[List[str]]") -> int:
+        "required by leetcode"
         return number_of_islands(grid)
