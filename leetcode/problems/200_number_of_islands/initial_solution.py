@@ -1,3 +1,4 @@
+# mypy: allow-any-expr, warn-unused-configs
 """
 https://leetcode.com/problems/number-of-islands/
 
@@ -39,10 +40,12 @@ Constraints:
 """
 # pylint: disable=redefined-outer-name,ungrouped-imports
 
+import ast
 import random
 import sys
 from itertools import chain, repeat
-from typing import TYPE_CHECKING, NamedTuple, NewType, Set
+from pathlib import Path
+from typing import TYPE_CHECKING, NamedTuple, NewType, Set, cast
 
 
 class Coordinate(NamedTuple):
@@ -60,6 +63,7 @@ CONTEXT_MANAGER_TYPING_URL = (
     "python-type-hints-how-to-type-a-context-manager/"
     "#class-based-context-managers"
 )
+HUGE_TEST_CASES = Path("huge_test_cases.txt")
 
 RICH = False
 DEBUGGING = RICH or False
@@ -77,7 +81,6 @@ if RICH or TYPE_CHECKING:
         Optional,
         Type,
         Union,
-        cast,
     )
 
     import rich
@@ -190,6 +193,7 @@ if RICH or TYPE_CHECKING:
                 )
 
             grid.island_colors = []
+            grid.live = None
 
             return grid
 
@@ -326,13 +330,13 @@ if RICH or TYPE_CHECKING:
                     self,
                     exc_type: Optional[Type[BaseException]],
                     exc_val: Optional[BaseException],
-                    exc_tb: TracebackType,
+                    exc_tb: Optional[TracebackType],
                 ) -> None:
                     "reset cell text"
                     coordinate_cell.plain = original_coordinate_text
                     land_cell.plain = original_land_text
 
-            return cast(ContextManager[None], TempContextManager)
+            return cast("ContextManager[None]", TempContextManager())
 
 
 if not RICH or TYPE_CHECKING:
@@ -512,6 +516,27 @@ if __name__ == "__main__":
             1,
         ),
     ]
+
+    if HUGE_TEST_CASES.is_file():
+        huge_tests = ast.literal_eval(HUGE_TEST_CASES.read_text(encoding="utf-8"))
+
+        # with HUGE_TEST_CASES.open(mode="wt") as file:
+        #     file.write("[\n")
+        #     for case, answer in huge_tests:
+        #         file.write(" [\n")
+        #         file.write("  [\n")
+        #         for row in case:
+        #             file.write("   ")
+        #             file.write(repr(row))
+        #             file.write(",\n")
+        #         file.write("  ],\n")
+        #         file.write(f"  {answer},\n")
+        #         file.write(" ],\n")
+        #     file.write("]")
+        #     sys.exit(0)
+
+        for case, answer in huge_tests:
+            test_cases.append(TestCase(cast("Sea", case), int(answer)))
 
     for test_number, test in enumerate(test_cases):
         sea = stringify(test.case)
