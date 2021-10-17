@@ -69,9 +69,10 @@ class Coordinate(NamedTuple):
 Island = NewType("Island", Set[Coordinate])
 Color = NewType("Color", str)
 
-DEBUGGING = False
+RICH = False
+DEBUGGING = RICH or False
 
-if DEBUGGING or TYPE_CHECKING:
+if RICH or TYPE_CHECKING:
     from collections import defaultdict
     from contextlib import contextmanager
     from itertools import repeat
@@ -150,8 +151,10 @@ if DEBUGGING or TYPE_CHECKING:
         def from_sea(cls, sea: Sea) -> "SeaTable":
             grid = cls.make_grid()
             width = len(sea[0])
+            # if DEBUGGING:
             # print(f"width -> {width}")
             height = len(sea)
+            # if DEBUGGING:
             # print(f"height -> {height}")
 
             for _ in range(width):
@@ -294,7 +297,7 @@ if DEBUGGING or TYPE_CHECKING:
             return cast(ContextManager[None], TempContextManager)
 
 
-if not DEBUGGING or TYPE_CHECKING:
+if not RICH or TYPE_CHECKING:
     from types import TracebackType
     from typing import Optional, Type
 
@@ -321,7 +324,7 @@ def number_of_islands(sea: Sea) -> int:
 
     islands: List[Island] = []
 
-    if DEBUGGING:
+    if RICH:
         random_color = new_random_color_gen()
         # island_colors: Dict[int, Color] = {0: random_color()}
 
@@ -340,7 +343,7 @@ def number_of_islands(sea: Sea) -> int:
             for island_index, island in enumerate(islands):
                 for coordinate in [left_coordinate, right_coordinate, above_coordinate]:
 
-                    if DEBUGGING:
+                    if RICH:
                         with sea_table.considering(land, coordinate):
                             pass
 
@@ -368,10 +371,10 @@ def number_of_islands(sea: Sea) -> int:
 
                 islands.append(Island({land}))
 
-            if DEBUGGING:
+            if RICH:
                 sea_table.update_islands(islands, random_color=random_color)
 
-    if DEBUGGING:
+    if RICH:
         sea_table.update_islands(islands, random_color=random_color)
         sleep(1)
 
@@ -381,7 +384,13 @@ def number_of_islands(sea: Sea) -> int:
 if __name__ == "__main__":
 
     def stringify(ints: Union[List[List[int]], Sea]) -> Sea:
-        return [["1" if value else "0" for value in row] for row in ints]
+        return [
+            [
+                "1" if (isinstance(value, str) and value != "0") or value else "0"
+                for value in row
+            ]
+            for row in ints
+        ]
 
     class TestCase(NamedTuple):
         case: Union[List[List[int]], Sea]
@@ -450,6 +459,15 @@ if __name__ == "__main__":
             ],
             1,
         ),
+        TestCase(
+            [
+                ["1", "1", "1", "1", "0"],
+                ["1", "1", "0", "1", "0"],
+                ["1", "1", "0", "0", "0"],
+                ["0", "0", "0", "0", "0"],
+            ],
+            1,
+        ),
     ]
 
     for test_number, test in enumerate(test_cases):
@@ -459,7 +477,7 @@ if __name__ == "__main__":
         if TYPE_CHECKING:
             live: Union[FakeLive, Live]
 
-        if DEBUGGING or TYPE_CHECKING:
+        if RICH or TYPE_CHECKING:
             sea_table = SeaTable.from_sea(sea)
             layout = Layout()
             layout.split_column(
@@ -473,23 +491,23 @@ if __name__ == "__main__":
         else:
             live = FakeLive()
 
-        if not DEBUGGING:
+        if not RICH and DEBUGGING:
             print(header)
 
         with live:
 
-            if DEBUGGING:
+            if RICH:
                 if isinstance(live, Live):
                     sea_table.live = live
 
             answer = number_of_islands(sea)
 
         if answer != test.correct_answer:
-            if DEBUGGING:
+            if RICH:
                 rich.print(sea_table)
                 print(f"incorrect: {answer}")
                 raise TestFailure
-            else:
+            elif DEBUGGING:
                 print("[")
                 for row in test.case:
                     print(f" {row}")
@@ -498,9 +516,9 @@ if __name__ == "__main__":
             sys.exit(1)
 
     message = "tests passed"
-    if DEBUGGING:
+    if RICH:
         console.rule(message)
-    else:
+    elif DEBUGGING:
         print(message)
 
 
