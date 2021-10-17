@@ -80,7 +80,10 @@ if DEBUGGING or TYPE_CHECKING:
     import rich.traceback
     from rich.color import ANSI_COLOR_NAMES
     from rich.console import Console
+    from rich.layout import Layout
+    from rich.live import Live
     from rich.pretty import pprint
+    from rich.rule import Rule
     from rich.table import Table
 
     class TestFailure(Exception):
@@ -123,6 +126,7 @@ if DEBUGGING or TYPE_CHECKING:
 
     class SeaTable(Table):
         island_colors: List[IslandAndColor]
+        live: Optional[Live]
 
         @classmethod
         def make_grid(cls) -> "SeaTable":
@@ -200,6 +204,17 @@ if DEBUGGING or TYPE_CHECKING:
 
             self.update_colors()
 
+            if self.live:
+                self.live.refresh()
+
+
+if not DEBUGGING or TYPE_CHECKING:
+    from contextlib import AbstractContextManager
+
+    class FakeLive(AbstractContextManager[None]):
+        def __enter__(self) -> None:
+            return None
+
 
 def number_of_islands(sea: Sea) -> int:
     number_of_rows = len(sea)
@@ -214,7 +229,6 @@ def number_of_islands(sea: Sea) -> int:
     if DEBUGGING:
         random_color = new_random_color_gen()
         # island_colors: Dict[int, Color] = {0: random_color()}
-        sea_table = SeaTable.from_sea(sea)
 
     for row_index, row in enumerate(sea):
         # is any new land adjacent to current islands?
@@ -258,7 +272,6 @@ def number_of_islands(sea: Sea) -> int:
 
     if DEBUGGING:
         sea_table.update_islands(islands, random_color=random_color)
-        rich.print(sea_table)
 
     return len(islands)
 
@@ -338,14 +351,34 @@ if __name__ == "__main__":
     ]
 
     for test_number, test in enumerate(test_cases):
-
+        sea = stringify(test.case)
         header = f"test #{test_number + 1}"
-        if DEBUGGING:
-            console.rule(header)
+
+        if TYPE_CHECKING:
+            live: Union[FakeLive, Live]
+
+        if DEBUGGING or TYPE_CHECKING:
+            sea_table = SeaTable.from_sea(sea)
+            layout = Layout()
+            layout.split_column(
+                Rule(message),
+                sea_table,
+            )
+            live = Live(layout, auto_refresh=False)
         else:
+            live = FakeLive()
+
+        if not DEBUGGING:
             print(header)
 
-        answer = number_of_islands(stringify(test.case))
+        with live:
+
+            if DEBUGGING:
+                if isinstance(live, Live):
+                    sea_table.live = live
+
+            answer = number_of_islands(sea)
+
         if answer != test.correct_answer:
             if DEBUGGING:
                 raise TestFailure
