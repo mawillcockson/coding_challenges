@@ -83,8 +83,10 @@ if DEBUGGING or TYPE_CHECKING:
     from rich.layout import Layout
     from rich.live import Live
     from rich.pretty import pprint
+    from rich.prompt import Prompt
     from rich.rule import Rule
     from rich.table import Table
+    from rich.text import Text
 
     class TestFailure(Exception):
         pass
@@ -179,9 +181,9 @@ if DEBUGGING or TYPE_CHECKING:
             for column_index, column in enumerate(self.columns):
                 for row_index, _ in enumerate(column._cells):
                     coordinate = Coordinate(row_index, column_index)
-                    column._cells[
-                        row_index
-                    ] = f"[white on {coordinates_and_colors[coordinate]}] [/]"
+                    column._cells[row_index] = Text(
+                        " ", style=f"white on {coordinates_and_colors[coordinate]}"
+                    )
 
         def update_islands(
             self, islands: Iterable[Island], random_color: Callable[[], Color]
@@ -204,8 +206,60 @@ if DEBUGGING or TYPE_CHECKING:
 
             self.update_colors()
 
+            self.live_refresh()
+
+        def live_refresh(self) -> None:
             if self.live:
                 self.live.refresh()
+                Prompt.ask("")
+
+        def considering(self, land: Coordinate, coordinate: Coordinate) -> None:
+            if land.row == coordinate.row:
+                if land.column < coordinate.column:
+                    land_character = ">"
+                elif land.column > coordinate.column:
+                    land_character = "<"
+                else:
+                    land_character = "="
+            elif land.column == coordinate.column:
+                if land.row > coordinate.row:
+                    land_character = "↓"
+                elif land.row < coordinate.row:
+                    land_character = "^"
+            else:
+                land_character = "?"
+
+            coordinate_character = "*"
+
+            # self.live.stop()
+            # rich.inspect(self)
+            # sys.exit(0)
+
+            width = len(self.columns)
+            height = self.row_count
+
+            # coordinate_cell = self.columns[coordinate.column]._cells[coordinate.row]
+            # self.columns[coordinate.column]._cells[coordinate.row] = Text(
+            #     coordinate_character
+            # )
+            # self.columns[coordinate.column]._cells[coordinate.row].copy_style(
+            #     coordinate_cell
+            # )
+            if (
+                0 <= coordinate.column <= width - 1
+                and 0 <= coordinate.row <= height - 1
+            ):
+                self.columns[coordinate.column]._cells[
+                    coordinate.row
+                ] = coordinate_character
+
+            # land_cell = self.columns[land.column]._cells[land.row]
+            # self.columns[land.column]._cells[land.row] = Text(land_character)
+            # self.columns[land.column]._cells[land.row].copy_style(land_cell)
+            if 0 <= land.column <= width - 1 and 0 <= land.row <= height - 1:
+                self.columns[land.column]._cells[land.row] = land_character
+
+            self.live_refresh()
 
 
 if not DEBUGGING or TYPE_CHECKING:
@@ -243,12 +297,14 @@ def number_of_islands(sea: Sea) -> int:
 
             adjacent_island_indeces: List[int] = []
             for island_index, island in enumerate(islands):
-                if (
-                    left_coordinate in island
-                    or right_coordinate in island
-                    or above_coordinate in island
-                ):
-                    adjacent_island_indeces.append(island_index)
+                for coordinate in [left_coordinate, right_coordinate, above_coordinate]:
+
+                    if DEBUGGING:
+                        sea_table.considering(land, coordinate)
+
+                    if coordinate in island:
+                        adjacent_island_indeces.append(island_index)
+                        break
 
             if adjacent_island_indeces:
 
@@ -361,10 +417,13 @@ if __name__ == "__main__":
             sea_table = SeaTable.from_sea(sea)
             layout = Layout()
             layout.split_column(
-                Rule(message),
-                sea_table,
+                Layout(Rule(header), name="header"),
+                Layout(sea_table, name="table"),
+                Layout("press Enter to continue", name="footer"),
             )
-            live = Live(layout, auto_refresh=False)
+            layout["header"].size = 1
+            layout["footer"].size = 1
+            live = Live(layout, auto_refresh=False, screen=True)
         else:
             live = FakeLive()
 
