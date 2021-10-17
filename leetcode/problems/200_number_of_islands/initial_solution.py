@@ -69,13 +69,15 @@ class Coordinate(NamedTuple):
 Island = NewType("Island", Set[Coordinate])
 Color = NewType("Color", str)
 
-DEBUGGING = True
+DEBUGGING = False
 
 if DEBUGGING or TYPE_CHECKING:
     from collections import defaultdict
+    from contextlib import contextmanager
     from itertools import repeat
     from time import sleep
-    from typing import DefaultDict, cast
+    from types import TracebackType
+    from typing import ContextManager, DefaultDict, ForwardRef, Iterator, Type, cast
 
     import rich
     import rich.traceback
@@ -222,7 +224,9 @@ if DEBUGGING or TYPE_CHECKING:
                     if Prompt.ask(""):
                         sys.exit(1)
 
-        def considering(self, land: Coordinate, coordinate: Coordinate) -> None:
+        def considering(
+            self, land: Coordinate, coordinate: Coordinate
+        ) -> ContextManager[None]:
             if land.row == coordinate.row:
                 if land.column < coordinate.column:
                     land_character = ">"
@@ -254,42 +258,57 @@ if DEBUGGING or TYPE_CHECKING:
                 coordinate_cell = cast(
                     Text, self.columns[coordinate.column]._cells[coordinate.row]
                 )
-                # style = coordinate_cell.style
+                original_coordinate_text = coordinate_cell.plain
                 coordinate_cell.plain = coordinate_character
-                # coordinate_cell.stylize(style)
+
+            else:
+                coordinate_cell = Text()
+                original_coordinate_text = ""
 
             if 0 <= land.column <= width - 1 and 0 <= land.row <= height - 1:
                 land_cell = cast(Text, self.columns[land.column]._cells[land.row])
-                # style = land_cell.style
+                original_land_text = land_cell.plain
                 land_cell.plain = land_character
-                # land_cell.stylize(style)
 
-            # if (
-            #     0 <= coordinate.column <= width - 1
-            #     and 0 <= coordinate.row <= height - 1
-            # ):
-            #     coordinate_cell = cast(
-            #         Text, self.columns[coordinate.column]._cells[coordinate.row]
-            #     )
-            #     new_cell = Text(coordinate_character)
-            #     new_cell.copy_styles(coordinate_cell)
-            #     self.columns[coordinate.column]._cells[coordinate.row] = new_cell
-
-            # if 0 <= land.column <= width - 1 and 0 <= land.row <= height - 1:
-            #     land_cell = cast(Text, self.columns[land.column]._cells[land.row])
-            #     new_cell = Text(land_character)
-            #     new_cell.copy_styles(land_cell)
-            #     self.columns[land.column]._cells[land.row] = new_cell
+            else:
+                land_cell = Text()
+                original_land_text = ""
 
             self.live_refresh()
 
+            class TempContextManager:
+                "https://adamj.eu/tech/2021/07/04/python-type-hints-how-to-type-a-context-manager/#class-based-context-managers"
+
+                def __enter__(self) -> None:
+                    pass
+
+                def __exit__(
+                    self,
+                    exc_type: Optional[Type[BaseException]],
+                    exc_val: Optional[BaseException],
+                    exc_tb: TracebackType,
+                ) -> None:
+                    coordinate_cell.plain = original_coordinate_text
+                    land_cell.plain = original_land_text
+
+            return cast(ContextManager[None], TempContextManager)
+
 
 if not DEBUGGING or TYPE_CHECKING:
-    from contextlib import AbstractContextManager
+    from types import TracebackType
+    from typing import Optional, Type
 
-    class FakeLive(AbstractContextManager[None]):
+    class FakeLive:
         def __enter__(self) -> None:
             return None
+
+        def __exit__(
+            self,
+            exc_type: Optional[Type[BaseException]],
+            exc_val: Optional[BaseException],
+            exc_tb: TracebackType,
+        ) -> None:
+            pass
 
 
 def number_of_islands(sea: Sea) -> int:
@@ -322,7 +341,8 @@ def number_of_islands(sea: Sea) -> int:
                 for coordinate in [left_coordinate, right_coordinate, above_coordinate]:
 
                     if DEBUGGING:
-                        sea_table.considering(land, coordinate)
+                        with sea_table.considering(land, coordinate):
+                            pass
 
                     if coordinate in island:
                         adjacent_island_indeces.append(island_index)
@@ -350,6 +370,10 @@ def number_of_islands(sea: Sea) -> int:
 
             if DEBUGGING:
                 sea_table.update_islands(islands, random_color=random_color)
+
+    if DEBUGGING:
+        sea_table.update_islands(islands, random_color=random_color)
+        sleep(1)
 
     return len(islands)
 
@@ -445,7 +469,7 @@ if __name__ == "__main__":
             )
             layout["header"].size = 1
             layout["footer"].size = 1
-            live = Live(layout, auto_refresh=False, refresh_per_second=8, screen=True)
+            live = Live(layout, auto_refresh=False, refresh_per_second=16, screen=True)
         else:
             live = FakeLive()
 
@@ -462,6 +486,8 @@ if __name__ == "__main__":
 
         if answer != test.correct_answer:
             if DEBUGGING:
+                rich.print(sea_table)
+                print(f"incorrect: {answer}")
                 raise TestFailure
             else:
                 print("[")
