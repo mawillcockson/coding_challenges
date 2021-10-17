@@ -74,7 +74,8 @@ DEBUGGING = True
 if DEBUGGING or TYPE_CHECKING:
     from collections import defaultdict
     from itertools import repeat
-    from typing import DefaultDict
+    from time import sleep
+    from typing import DefaultDict, cast
 
     import rich
     import rich.traceback
@@ -154,7 +155,10 @@ if DEBUGGING or TYPE_CHECKING:
             for _ in range(width):
                 grid.add_column()
             for _ in range(height):
-                grid.add_row(*[" "] * width, style="white on black")
+                grid.add_row(
+                    *[Text(" ", style="white on black") for _ in range(width)],
+                    style="white on black",
+                )
 
             grid.island_colors = []
 
@@ -172,17 +176,18 @@ if DEBUGGING or TYPE_CHECKING:
                 self.island_colors.pop(index)
 
         def update_colors(self) -> None:
-            coordinates_and_colors: DefaultDict[Coordinate, Color] = defaultdict(
+            coordinate_color: DefaultDict[Coordinate, Color] = defaultdict(
                 lambda: Color("black")
             )
             for island, color in self.island_colors:
-                coordinates_and_colors.update(zip(island, repeat(color)))
+                coordinate_color.update(zip(island, repeat(color)))
 
             for column_index, column in enumerate(self.columns):
                 for row_index, _ in enumerate(column._cells):
                     coordinate = Coordinate(row_index, column_index)
+                    cell = cast(Text, column._cells[row_index])
                     column._cells[row_index] = Text(
-                        " ", style=f"white on {coordinates_and_colors[coordinate]}"
+                        cell.plain, style=f"white on {coordinate_color[coordinate]}"
                     )
 
         def update_islands(
@@ -211,7 +216,11 @@ if DEBUGGING or TYPE_CHECKING:
         def live_refresh(self) -> None:
             if self.live:
                 self.live.refresh()
-                Prompt.ask("")
+                if self.live.refresh_per_second:
+                    sleep(1 / self.live.refresh_per_second)
+                else:
+                    if Prompt.ask(""):
+                        sys.exit(1)
 
         def considering(self, land: Coordinate, coordinate: Coordinate) -> None:
             if land.row == coordinate.row:
@@ -222,9 +231,9 @@ if DEBUGGING or TYPE_CHECKING:
                 else:
                     land_character = "="
             elif land.column == coordinate.column:
-                if land.row > coordinate.row:
+                if land.row < coordinate.row:
                     land_character = "↓"
-                elif land.row < coordinate.row:
+                elif land.row > coordinate.row:
                     land_character = "^"
             else:
                 land_character = "?"
@@ -238,26 +247,39 @@ if DEBUGGING or TYPE_CHECKING:
             width = len(self.columns)
             height = self.row_count
 
-            # coordinate_cell = self.columns[coordinate.column]._cells[coordinate.row]
-            # self.columns[coordinate.column]._cells[coordinate.row] = Text(
-            #     coordinate_character
-            # )
-            # self.columns[coordinate.column]._cells[coordinate.row].copy_style(
-            #     coordinate_cell
-            # )
             if (
                 0 <= coordinate.column <= width - 1
                 and 0 <= coordinate.row <= height - 1
             ):
-                self.columns[coordinate.column]._cells[
-                    coordinate.row
-                ] = coordinate_character
+                coordinate_cell = cast(
+                    Text, self.columns[coordinate.column]._cells[coordinate.row]
+                )
+                # style = coordinate_cell.style
+                coordinate_cell.plain = coordinate_character
+                # coordinate_cell.stylize(style)
 
-            # land_cell = self.columns[land.column]._cells[land.row]
-            # self.columns[land.column]._cells[land.row] = Text(land_character)
-            # self.columns[land.column]._cells[land.row].copy_style(land_cell)
             if 0 <= land.column <= width - 1 and 0 <= land.row <= height - 1:
-                self.columns[land.column]._cells[land.row] = land_character
+                land_cell = cast(Text, self.columns[land.column]._cells[land.row])
+                # style = land_cell.style
+                land_cell.plain = land_character
+                # land_cell.stylize(style)
+
+            # if (
+            #     0 <= coordinate.column <= width - 1
+            #     and 0 <= coordinate.row <= height - 1
+            # ):
+            #     coordinate_cell = cast(
+            #         Text, self.columns[coordinate.column]._cells[coordinate.row]
+            #     )
+            #     new_cell = Text(coordinate_character)
+            #     new_cell.copy_styles(coordinate_cell)
+            #     self.columns[coordinate.column]._cells[coordinate.row] = new_cell
+
+            # if 0 <= land.column <= width - 1 and 0 <= land.row <= height - 1:
+            #     land_cell = cast(Text, self.columns[land.column]._cells[land.row])
+            #     new_cell = Text(land_character)
+            #     new_cell.copy_styles(land_cell)
+            #     self.columns[land.column]._cells[land.row] = new_cell
 
             self.live_refresh()
 
@@ -326,8 +348,8 @@ def number_of_islands(sea: Sea) -> int:
 
                 islands.append(Island({land}))
 
-    if DEBUGGING:
-        sea_table.update_islands(islands, random_color=random_color)
+            if DEBUGGING:
+                sea_table.update_islands(islands, random_color=random_color)
 
     return len(islands)
 
@@ -423,7 +445,7 @@ if __name__ == "__main__":
             )
             layout["header"].size = 1
             layout["footer"].size = 1
-            live = Live(layout, auto_refresh=False, screen=True)
+            live = Live(layout, auto_refresh=False, refresh_per_second=8, screen=True)
         else:
             live = FakeLive()
 
