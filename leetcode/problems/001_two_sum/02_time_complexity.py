@@ -48,9 +48,7 @@ class Solution:
         """
         differences: Dict[int, int] = {}
         for a_index, a in enumerate(nums):
-            difference = target - a
+            if a in differences and (b_index := differences[a]) != a_index:
+                return (a_index, differences[a])
 
-            if difference in differences and (b_index := differences[difference]) != a_index:
-                return (a_index, b_index)
-
-            differences[difference] = a_index
+            differences[target - a] = a_index
