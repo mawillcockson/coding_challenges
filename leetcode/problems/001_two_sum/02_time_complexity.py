@@ -34,6 +34,8 @@ Constraints:
 
  
 Follow-up: Can you come up with an algorithm that is less than O(n^2) time complexity?
+
+Submitted: https://leetcode.com/submissions/detail/577699864/
 """
 from typing import List, Dict
 
