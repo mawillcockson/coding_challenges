@@ -27,6 +27,7 @@ LIMIT = 109
 
 def random_test_case():
     # visual
+    # https://www.desmos.com/calculator/mowk6elxin
     target = randint(-LIMIT, LIMIT)
     x_lower_bound = max(-LIMIT, target - LIMIT)
     x_upper_bound = min(LIMIT, target + LIMIT)
