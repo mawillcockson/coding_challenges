@@ -57,6 +57,7 @@ class TestCase(TypedDict):
 
 
 TEST_CASES: List[TestCase] = [
+    {"case": {"l1": 1, "l2": 1}, "correct_answer": 2},
     {"case": {"l1": 342, "l2": 465}, "correct_answer": 807},
     {"case": {"l1": 0, "l2": 0}, "correct_answer": 0},
     {"case": {"l1": 9_999_999, "l2": 9_999}, "correct_answer": 89_990_001},
@@ -101,7 +102,8 @@ def test(function) -> bool:
 
         answer = function(l1=l1, l2=l2)
         if not answer or answer != correct_answer:
-            print(f"failure for case #{case_index + 1}:")
+            case_number = case_index + 1
+            print(f"failure for case #{'random' if case_number > len(TEST_CASES) else case_number}:")
             print("case:")
             pprint(case)
             print("correct answer:")
@@ -111,7 +113,9 @@ def test(function) -> bool:
                 print(ListNode.__repr__(answer))
             else:
                 print("None")
+            breakpoint()
             sys.exit(1)
+        else: print("-")
 
     print("passed")
 

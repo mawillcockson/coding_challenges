@@ -53,12 +53,11 @@ class Solution:
         while l1.next or l2.next:
             digit1 = l1.val
             digit2 = l2.val
+            print(f"{digit1} + {digit2} + {carry} / 10 = ", end="")
             carry, result_digit = divmod(digit1 + digit2 + carry, 10)
+            print(f"{carry}, {result_digit}")
 
             result.val = result_digit
-
-            if not (l1.next and l2.next):
-                break
 
             result.next = ListNode()
             result = result.next
