@@ -48,17 +48,22 @@ class Solution:
         l1 = l1 or empty
         l2 = l2 or empty
         carry = 0
-        result: "Optional[ListNode]" = ListNode()
+        start: "ListNode" = ListNode()
+        result = start
         while l1.next or l2.next:
             digit1 = l1.val
             digit2 = l2.val
             carry, result_digit = divmod(digit1 + digit2 + carry, 10)
 
             result.val = result_digit
+
+            if not (l1.next and l2.next):
+                break
+
             result.next = ListNode()
             result = result.next
 
             l1 = l1.next or empty
             l2 = l2.next or empty
 
-        return result
+        return start
