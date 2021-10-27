@@ -5,11 +5,11 @@ import os
 import sys
 from argparse import ArgumentParser
 from importlib import import_module
-from itertools import chain
+from itertools import chain, starmap
 from pathlib import Path
-from pprint import pprint
+from pprint import pformat
 from random import randint, shuffle
-from typing import List, Optional, Tuple, TypedDict
+from typing import List, NamedTuple, Optional, Tuple, TypedDict, Type, Callable
 
 
 class ListNode:
@@ -17,7 +17,10 @@ class ListNode:
         self.val = val
         self.next = next
 
-    def __eq__(self, other: "ListNode") -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ListNode):
+            return False
+
         current_self = self
 
         if not current_self.val == other.val:
@@ -46,89 +49,87 @@ class ListNode:
 
         return f"<ListNode: {string}>"
 
+    @classmethod
+    def from_int(cls: "Type[ListNode]", number: int) -> "ListNode":
+        "from https://stackoverflow.com/a/39644726/5059062"
+        start = ListNode()
+        result = start
+        while number:
+            result.val = number % 10
+            number = number // 10
+            if not number:
+                break
 
-class Parameters(TypedDict):
-    l1: int
-    l2: int
+            result.next = ListNode()
+            result = result.next
+
+        result.next = None
+        return start
 
 
-CorrectAnswer = int
+Function = Callable[[Optional[ListNode], Optional[ListNode]], Optional[ListNode]]
+
+class Parameters(NamedTuple):
+    l1: ListNode
+    l2: ListNode
 
 
-class TestCase(TypedDict):
+class TestCase(NamedTuple):
     case: Parameters
-    correct_answer: CorrectAnswer
+    correct_answer: ListNode
 
 
-TEST_CASES: List[TestCase] = [
-    {"case": {"l1": 1, "l2": 1}, "correct_answer": 2},
-    {"case": {"l1": 342, "l2": 465}, "correct_answer": 807},
-    {"case": {"l1": 0, "l2": 0}, "correct_answer": 0},
-    {"case": {"l1": 9_999_999, "l2": 9_999}, "correct_answer": 89_990_001},
+TEST_CASES = [
+    (9, 9),
+    (1, 1),
+    (342, 465),
+    (0, 0),
+    (9_999_999, 9_999),
 ]
 LARGEST_NUMBER_100_DIGITS_LONG = 10 ** 100 - 1
 LISTNODE_EQUALITIES = [(1, 1), (1, 2)]
 
 
-def int_to_ListNode(number: int) -> ListNode:
-    "from https://stackoverflow.com/a/39644726/5059062"
-    start = ListNode()
-    result = start
-    while number:
-        result.val = number % 10
-        number = number // 10
-        if not number:
-            break
+def make_test_case(num1: Optional[int], num2: Optional[int]) -> TestCase:
+    if num1 is None:
+        num1 = randint(0, LARGEST_NUMBER_100_DIGITS_LONG)
+    if num2 is None:
+        num2 = randint(0, LARGEST_NUMBER_100_DIGITS_LONG)
 
-        result.next = ListNode()
-        result = result.next
-
-    result.next = None
-    return start
-
-
-def random_test_case():
-    num1 = randint(0, LARGEST_NUMBER_100_DIGITS_LONG)
-    num2 = randint(0, LARGEST_NUMBER_100_DIGITS_LONG)
     correct_answer = num1 + num2
-    return TestCase(case=case, correct_answer=correct_answer)
+
+    case = Parameters(l1=ListNode.from_int(num1), l2=ListNode.from_int(num2))
+
+    return TestCase(case=case, correct_answer=ListNode.from_int(correct_answer))
 
 
-def test(function) -> bool:
+def test(function: Function) -> None:
     for num1, num2 in LISTNODE_EQUALITIES:
-        if (int_to_ListNode(num1) == int_to_ListNode(num2)) != (num1 == num2):
+        if (ListNode.from_int(num1) == ListNode.from_int(num2)) != (num1 == num2):
             print("ListNode equality failure: {num1}, {num2}")
             sys.exit(1)
 
     for case_index, test_case in enumerate(
-        chain(TEST_CASES, (random_test_case() for _ in range(100_000)))
+        chain(
+            starmap(make_test_case, TEST_CASES),
+            (make_test_case(num1=None, num2=None) for _ in range(100_000)),
+        )
     ):
-        case = test_case["case"]
-        correct_answer = test_case["correct_answer"]
+        case_number = str(case_index + 1) if case_index <= len(TEST_CASES) else "random"
+        if case_number != "random":
+            print(".")
 
-        l1 = int_to_ListNode(case["l1"])
-        l2 = int_to_ListNode(case["l2"])
-        correct_answer = int_to_ListNode(correct_answer)
+        case = test_case.case
+        correct_answer = test_case.correct_answer
 
-        answer = function(l1=l1, l2=l2)
+        answer = function(*case)
         if not answer or answer != correct_answer:
-            case_number = case_index + 1
-            print(
-                f"failure for case #{'random' if case_number > len(TEST_CASES) else case_number}:"
-            )
-            print("case:")
-            pprint(case)
-            print("correct answer:")
-            pprint(correct_answer)
-            print("answer:")
-            if not answer is None:
-                print(ListNode.__repr__(answer))
-            else:
-                print("None")
+            print(f"failure for case #{case_number}:")
+            print(f"case:\n{pformat(case)}")
+            print(f"correct answer:\n{correct_answer}")
+            print(f"answer:\n{ListNode.__repr__(answer) if answer is not None else 'None'}")
             breakpoint()
             sys.exit(1)
-        else:
-            print("-")
 
     print("passed")
 
@@ -137,11 +138,11 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("file", help="filename of python file to test")
     args = parser.parse_args()
-    path = Path(args.file)
+    path = Path(args.file) # type: ignore
     if not path.is_file():
         print(f"{path} is not a file")
         sys.exit(1)
 
     sys.path.append(str(path.parent))
     module = import_module(path.stem)
-    test(module.Solution().addTwoNumbers)
+    test(module.Solution().addTwoNumbers) # type: ignore
