@@ -70,9 +70,12 @@ def int_to_ListNode(number: int) -> ListNode:
     result = start
     while number:
         result.val = number % 10
+        number = number // 10
+        if not number:
+            break
+
         result.next = ListNode()
         result = result.next
-        number = number // 10
 
     result.next = None
     return start
