@@ -20,7 +20,7 @@ class ListNode:
         self.next = next
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, ListNode):
+        if type(other).__name__ != type(self).__name__:
             return False
 
         current_self = self
@@ -123,7 +123,7 @@ def test(function: Function) -> None:
     ):
         case_number = str(case_index + 1) if case_index <= len(TEST_CASES) else "random"
         if case_number != "random":
-            print(".")
+            print(f"test #{case_number}")
 
         case = test_case.case
         correct_answer = test_case.correct_answer
@@ -136,7 +136,7 @@ def test(function: Function) -> None:
             print(
                 f"answer:\n{ListNode.__repr__(answer) if answer is not None else 'None'}"
             )
-            breakpoint()  # pylint: disable=forgotten-debug-statement
+            # breakpoint()  # pylint: disable=forgotten-debug-statement
             sys.exit(1)
 
     print("passed")

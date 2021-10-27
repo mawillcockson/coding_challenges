@@ -31,11 +31,19 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Optional
 
-    # Definition for singly-linked list.
-    class ListNode:
-        def __init__(self, val: int = 0, next: "Optional[ListNode]" = None):
-            self.val = val
-            self.next = next
+    from test_solution import ListNode
+
+if "ListNode" not in globals():
+    try:
+        from test_solution import ListNode
+    except ImportError:
+
+        class ListNode:
+            "Definition for singly-linked list."
+
+            def __init__(self, val: int = 0, next: "Optional[ListNode]" = None):
+                self.val = val
+                self.next = next
 
 
 empty = ListNode()
@@ -47,22 +55,30 @@ class Solution:
     ) -> "Optional[ListNode]":
         l1 = l1 or empty
         l2 = l2 or empty
-        carry = 0
-        start: "ListNode" = ListNode()
+        start = ListNode()
         result = start
+
+        # print(f"{l1.val} + {l2.val} //% 10 = ", end="")
+        carry, result_digit = divmod(l1.val + l2.val, 10)
+        # print(f"{carry}, {result_digit}")
+        result.val = result_digit
+
         while l1.next or l2.next:
-            digit1 = l1.val
-            digit2 = l2.val
-            print(f"{digit1} + {digit2} + {carry} / 10 = ", end="")
-            carry, result_digit = divmod(digit1 + digit2 + carry, 10)
-            print(f"{carry}, {result_digit}")
-
-            result.val = result_digit
-
             result.next = ListNode()
             result = result.next
 
             l1 = l1.next or empty
             l2 = l2.next or empty
+
+            digit1 = l1.val
+            digit2 = l2.val
+            # print(f"{digit1} + {digit2} + {carry} //% 10 = ", end="")
+            carry, result_digit = divmod(digit1 + digit2 + carry, 10)
+            # print(f"{carry}, {result_digit}")
+
+            result.val = result_digit
+
+        if carry:
+            result.next = ListNode(carry, None)
 
         return start
