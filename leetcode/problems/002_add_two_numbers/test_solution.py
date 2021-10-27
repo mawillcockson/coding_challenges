@@ -66,15 +66,16 @@ LARGEST_NUMBER_100_DIGITS_LONG = 10 ** 100 - 1
 
 def int_to_ListNode(number: int) -> ListNode:
     "from https://stackoverflow.com/a/39644726/5059062"
-    result = ListNode()
+    start = ListNode()
+    result = start
     while number:
         result.val = number % 10
-        new_result = ListNode()
-        new_result.next = result
-        result = new_result
+        result.next = ListNode()
+        result = result.next
         number = number // 10
 
-    return result
+    result.next = None
+    return start
 
 
 def random_test_case():
