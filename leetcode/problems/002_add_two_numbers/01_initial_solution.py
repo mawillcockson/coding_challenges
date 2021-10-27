@@ -52,6 +52,14 @@ class Solution:
     def addTwoNumbers(
         self, l1: "Optional[ListNode]", l2: "Optional[ListNode]"
     ) -> "Optional[ListNode]":
+        """
+        since the nodes start at the "1s place", adding each pair of digits
+        from the start will add the two numbers together, just like I would do
+        on paper with long addition
+
+        this lets me carry over numbers very naturally, mimicking the algorithm
+        even better
+        """
         # An empty ListNode used both because 0 added to anything doesn't
         # change its value, and the it's a leaf or end node (i.e. it doesn't
         # point to a next node)
@@ -62,18 +70,33 @@ class Solution:
         # it's  to check if they're None necessary
         l1 = l1 or empty
         l2 = l2 or empty
+
+        # Remember to first node in the sum's linked list
         first_node = ListNode()
         next_node = first_node
 
+        # Do the first addition outside the loop, since the condition checks if
+        # there's a next value, and if both lists passed in are only 1 digit
+        # long, the loop will be skipped, skipping that first addition
+
+        # divmod() does the equivalent of integer division and modulus:
+        #
+        # carry = (l1.val + l2.val) // 10
+        # result_digit = (l1.val + l2.val) % 10
+        #
         # print(f"{l1.val} + {l2.val} //% 10 = ", end="") # debug
         carry, result_digit = divmod(l1.val + l2.val, 10)
         # print(f"{carry}, {result_digit}") # debug
         next_node.val = result_digit
 
+        # if either has a next node
         while l1.next or l2.next:
+            # Add a node to the sum's list
             next_node.next = ListNode()
             next_node = next_node.next
 
+            # get the next node for both input lists if there is one, and if
+            # there isn't, use the empty node
             l1 = l1.next or empty
             l2 = l2.next or empty
 
@@ -85,7 +108,9 @@ class Solution:
 
             next_node.val = result_digit
 
+        # Once the loop is done, if there's a leftover remainder, add it as an end node to the sum
         if carry:
             next_node.next = ListNode(carry, None)
 
+        # Return the first node
         return first_node
