@@ -1,19 +1,21 @@
 """
 tests the solution in the named file
 """
-import os
 import sys
 from argparse import ArgumentParser
 from importlib import import_module
 from itertools import chain, starmap
 from pathlib import Path
 from pprint import pformat
-from random import randint, shuffle
-from typing import List, NamedTuple, Optional, Tuple, TypedDict, Type, Callable
+from random import randint
+from typing import Callable, NamedTuple, Optional
 
 
 class ListNode:
+    "redefined and expanded from LeetCode"
+
     def __init__(self, val: int = 0, next: "Optional[ListNode]" = None):
+        # pylint: disable=redefined-builtin
         self.val = val
         self.next = next
 
@@ -69,12 +71,15 @@ class ListNode:
 
 Function = Callable[[Optional[ListNode], Optional[ListNode]], Optional[ListNode]]
 
+
 class Parameters(NamedTuple):
+    "parameters passed as star-args to the function under test"
     l1: ListNode
     l2: ListNode
 
 
 class TestCase(NamedTuple):
+    "a test case"
     case: Parameters
     correct_answer: ListNode
 
@@ -91,6 +96,7 @@ LISTNODE_EQUALITIES = [(1, 1), (1, 2)]
 
 
 def make_test_case(num1: Optional[int], num2: Optional[int]) -> TestCase:
+    "make a test case using specific or random numbers"
     if num1 is None:
         num1 = randint(0, LARGEST_NUMBER_100_DIGITS_LONG)
     if num2 is None:
@@ -104,6 +110,7 @@ def make_test_case(num1: Optional[int], num2: Optional[int]) -> TestCase:
 
 
 def test(function: Function) -> None:
+    "performs tests on the function to simulate the LeetCode submission"
     for num1, num2 in LISTNODE_EQUALITIES:
         if (ListNode.from_int(num1) == ListNode.from_int(num2)) != (num1 == num2):
             print("ListNode equality failure: {num1}, {num2}")
@@ -127,8 +134,10 @@ def test(function: Function) -> None:
             print(f"failure for case #{case_number}:")
             print(f"case:\n{pformat(case)}")
             print(f"correct answer:\n{correct_answer}")
-            print(f"answer:\n{ListNode.__repr__(answer) if answer is not None else 'None'}")
-            breakpoint()
+            print(
+                f"answer:\n{ListNode.__repr__(answer) if answer is not None else 'None'}"
+            )
+            breakpoint()  # pylint: disable=forgotten-debug-statement
             sys.exit(1)
 
     print("passed")
@@ -138,11 +147,11 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("file", help="filename of python file to test")
     args = parser.parse_args()
-    path = Path(args.file) # type: ignore
+    path = Path(args.file)  # type: ignore
     if not path.is_file():
         print(f"{path} is not a file")
         sys.exit(1)
 
     sys.path.append(str(path.parent))
     module = import_module(path.stem)
-    test(module.Solution().addTwoNumbers) # type: ignore
+    test(module.Solution().addTwoNumbers)  # type: ignore
