@@ -57,8 +57,7 @@ class ListNode:
         start = ListNode()
         result = start
         while number:
-            result.val = number % 10
-            number = number // 10
+            number, result.val = divmod(number, 10)
             if not number:
                 break
 
