@@ -48,26 +48,31 @@ if "ListNode" not in globals():
                 self.next = next
 
 
-empty = ListNode()
-
-
 class Solution:
     def addTwoNumbers(
         self, l1: "Optional[ListNode]", l2: "Optional[ListNode]"
     ) -> "Optional[ListNode]":
+        # An empty ListNode used both because 0 added to anything doesn't
+        # change its value, and the it's a leaf or end node (i.e. it doesn't
+        # point to a next node)
+        empty = ListNode(0, None)
+
+        # I'm not sure why any of the parameters are marked as optional, as
+        # there's always a value when run by LeetCode, but because they are,
+        # it's  to check if they're None necessary
         l1 = l1 or empty
         l2 = l2 or empty
-        start = ListNode()
-        result = start
+        first_node = ListNode()
+        next_node = first_node
 
-        # print(f"{l1.val} + {l2.val} //% 10 = ", end="")
+        # print(f"{l1.val} + {l2.val} //% 10 = ", end="") # debug
         carry, result_digit = divmod(l1.val + l2.val, 10)
-        # print(f"{carry}, {result_digit}")
-        result.val = result_digit
+        # print(f"{carry}, {result_digit}") # debug
+        next_node.val = result_digit
 
         while l1.next or l2.next:
-            result.next = ListNode()
-            result = result.next
+            next_node.next = ListNode()
+            next_node = next_node.next
 
             l1 = l1.next or empty
             l2 = l2.next or empty
@@ -78,9 +83,9 @@ class Solution:
             carry, result_digit = divmod(digit1 + digit2 + carry, 10)
             # print(f"{carry}, {result_digit}")
 
-            result.val = result_digit
+            next_node.val = result_digit
 
         if carry:
-            result.next = ListNode(carry, None)
+            next_node.next = ListNode(carry, None)
 
-        return start
+        return first_node

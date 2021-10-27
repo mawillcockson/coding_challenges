@@ -121,7 +121,7 @@ def test(function: Function) -> None:
             (make_test_case(num1=None, num2=None) for _ in range(100_000)),
         )
     ):
-        case_number = str(case_index + 1) if case_index <= len(TEST_CASES) else "random"
+        case_number = str(case_index + 1) if case_index + 1 <= len(TEST_CASES) else "random"
         if case_number != "random":
             print(f"test #{case_number}")
 
