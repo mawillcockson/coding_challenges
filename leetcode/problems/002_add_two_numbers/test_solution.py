@@ -19,6 +19,10 @@ class ListNode:
 
     def __eq__(self, other: "ListNode") -> bool:
         current_self = self
+
+        if not current_self.val == other.val:
+            return False
+
         while current_self.next and other.next:
             if not current_self.val == other.val:
                 return False
@@ -63,6 +67,7 @@ TEST_CASES: List[TestCase] = [
     {"case": {"l1": 9_999_999, "l2": 9_999}, "correct_answer": 89_990_001},
 ]
 LARGEST_NUMBER_100_DIGITS_LONG = 10 ** 100 - 1
+LISTNODE_EQUALITIES = [(1, 1), (1, 2)]
 
 
 def int_to_ListNode(number: int) -> ListNode:
@@ -90,6 +95,11 @@ def random_test_case():
 
 
 def test(function) -> bool:
+    for num1, num2 in LISTNODE_EQUALITIES:
+        if (int_to_ListNode(num1) == int_to_ListNode(num2)) != (num1 == num2):
+            print("ListNode equality failure: {num1}, {num2}")
+            sys.exit(1)
+
     for case_index, test_case in enumerate(
         chain(TEST_CASES, (random_test_case() for _ in range(100_000)))
     ):
@@ -103,7 +113,9 @@ def test(function) -> bool:
         answer = function(l1=l1, l2=l2)
         if not answer or answer != correct_answer:
             case_number = case_index + 1
-            print(f"failure for case #{'random' if case_number > len(TEST_CASES) else case_number}:")
+            print(
+                f"failure for case #{'random' if case_number > len(TEST_CASES) else case_number}:"
+            )
             print("case:")
             pprint(case)
             print("correct answer:")
@@ -115,7 +127,8 @@ def test(function) -> bool:
                 print("None")
             breakpoint()
             sys.exit(1)
-        else: print("-")
+        else:
+            print("-")
 
     print("passed")
 
