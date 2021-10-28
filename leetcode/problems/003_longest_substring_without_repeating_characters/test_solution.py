@@ -68,6 +68,9 @@ def make_test_case(
 
     # draw a random sample of unique characters from a pool
     substring_length = randint(0, len(ALL_CHARACTERS))
+    if not substring_length:
+        return TestCase(case=Parameters(s=""), correct_answer=Answer(substring="", length=0))
+
     substring = sample(ALL_CHARACTERS, k=substring_length)
 
     # this substring will be placed within a longer string, and in order for it
