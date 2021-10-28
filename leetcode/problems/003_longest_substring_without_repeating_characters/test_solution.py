@@ -9,9 +9,7 @@ from pathlib import Path
 from pprint import pformat
 from random import choices, randint, sample
 from string import ascii_letters, digits, punctuation
-from typing import Callable, NamedTuple, Optional
-
-Function = Callable[[str], int]
+from typing import Callable, List, NamedTuple, Optional
 
 
 class Parameters(NamedTuple):
@@ -19,24 +17,36 @@ class Parameters(NamedTuple):
     s: str
 
 
+class Answer(NamedTuple):
+    """
+    the temporary output of the function under test to make it easier to assess
+    answers
+    """
+
+    substring: str
+    length: int
+
+
 class TestCase(NamedTuple):
     "a test case"
     case: Parameters
-    correct_answer: int
+    correct_answer: Answer
 
+
+Function = Callable[[str], Answer]
 
 TEST_CASES = [
-    ("abcabcbb", 3),
-    ("bbbbb", 1),
-    ("pwwkew", 3),
-    ("", 0),
+    ("abcabcbb", "abc"),
+    ("bbbbb", "b"),
+    ("pwwkew", "wke"),
+    ("", ""),
 ]
 LONGEST_STRING = 50_000
 ALL_CHARACTERS = list(set(ascii_letters + digits + punctuation))
 
 
 def make_test_case(
-    s: Optional[str] = None, correct_answer: Optional[int] = None
+    s: Optional[str] = None, correct_answer: Optional[str] = None
 ) -> TestCase:
     """
     generate a random test case, or make one from inputs
@@ -47,23 +57,39 @@ def make_test_case(
             "either both 's' and 'correct_answer' need to be given, or neither"
         )
     elif s is not None and correct_answer is not None:
-        return TestCase(Parameters(s=s), correct_answer=correct_answer)
+        return TestCase(
+            Parameters(s=s),
+            correct_answer=Answer(substring=correct_answer, length=len(correct_answer)),
+        )
 
-    # The substring is guaranteed to be the longest unique substring if it's both
-    # unique, and the longest.
+    # The substring is guaranteed to be the longest unique substring if it's
+    # the longest substring within a string of characters all pulled from that
+    # substring
+
+    # draw a random sample of unique characters from a pool
     substring_length = randint(0, len(ALL_CHARACTERS))
     substring = sample(ALL_CHARACTERS, k=substring_length)
-    rest_of_string_length = randint(0, min(LONGEST_STRING, substring_length - 1))
-    rest_of_characters = choices(ALL_CHARACTERS, k=rest_of_string_length)
-    insertion_index = randint(0, rest_of_string_length - 1)
-    whole_string = [
-        *rest_of_characters[:insertion_index],
-        *substring,
-        *rest_of_characters[insertion_index:],
-    ]
+
+    # this substring will be placed within a longer string, and in order for it
+    # to be the longest, it must be longer than both the substring in front of
+    # it, and the substring after it
+    pre_substring_length = randint(0, substring_length - 1)
+    post_substring_length = randint(0, substring_length - 1)
+
+    # those substrings can take characters from anywhere, since even if they're
+    # unique, they won't be the longest
+    pre_substring = choices(ALL_CHARACTERS, k=pre_substring_length)
+    post_substring = choices(ALL_CHARACTERS, k=post_substring_length)
+
+    # then, add characters from that substring until
+    whole_string: List[str] = []
+    whole_string.extend(pre_substring)
+    whole_string.extend(substring)
+    whole_string.extend(post_substring)
 
     case = Parameters(s="".join(whole_string))
-    return TestCase(case=case, correct_answer=substring_length)
+    correct_answer = Answer(substring="".join(substring), length=substring_length)
+    return TestCase(case=case, correct_answer=correct_answer)
 
 
 def test(function: Function) -> None:
