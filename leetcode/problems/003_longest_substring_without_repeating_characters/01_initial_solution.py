@@ -35,6 +35,8 @@ Note:
 
 This is similar to problem solved by KMP:
 https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm
+
+Submitted: https://leetcode.com/submissions/detail/578954540/
 """
 from typing import TYPE_CHECKING
 
