@@ -105,17 +105,9 @@ class Solution:
             current_substring.append(character)
             # print("")  # debug
 
-        if len(current_substring) > max_unique_substring_length:
+        if len(current_substring_characters) > max_unique_substring_length:
             max_unique_substring_length = len(current_substring)
             longest_unique_substring = current_substring
-
-        if s and not max_unique_substring_length:
-            # if there are characters in the string, but
-            # max_unique_substring_length is still at 0, that means the loop
-            # completed without ever encountering a non-unique character,
-            # meaning the whole string is unique
-            print(f"max_unique_substring_length is len(s) = {len(s)}")  # debug
-            max_unique_substring_length = len(s)
 
         if not TYPE_CHECKING and Answer is int:
             return max_unique_substring_length
