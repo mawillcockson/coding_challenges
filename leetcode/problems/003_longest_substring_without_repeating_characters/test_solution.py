@@ -82,6 +82,12 @@ def long_test_case(max_length: int = LONGEST_STRING) -> TestCase:
     and the substrings can't form a longer substring through combining with
     adjacent substrings, I think...
 
+    essentially, given the substring 123, the longest prefix can be 12, and the
+    longest suffix can be 23, so the resulting string will look like:
+    ...121212121232323232323...
+
+    no unique substring will be longer than 123
+
     maximum length is unlimited
     """
     # select a random sample of characters
@@ -104,20 +110,24 @@ def long_test_case(max_length: int = LONGEST_STRING) -> TestCase:
 
     # choose how many prefixes and suffixes there will be by choosing how many
     # prefixes, then filling the rest out with suffixes
-    possible_number_of_prefixes = remaining_length // len(prefix)
-    if possible_number_of_prefixes:
-        number_of_prefixes = randint(0, possible_number_of_prefixes)
-        remaining_length -= number_of_prefixes * len(prefix)
-        whole_string: "List[str]" = prefix * number_of_prefixes
+    if prefix:
+        possible_number_of_prefixes = remaining_length // len(prefix)
+        if possible_number_of_prefixes:
+            number_of_prefixes = randint(0, possible_number_of_prefixes)
+            remaining_length -= number_of_prefixes * len(prefix)
+            whole_string: "List[str]" = prefix * number_of_prefixes
+        else:
+            whole_string = []
     else:
         whole_string = []
 
     whole_string.extend(substring)
 
-    possible_number_of_suffixes = remaining_length // len(suffix)
-    if possible_number_of_suffixes:
-        number_of_suffixes = randint(0, possible_number_of_suffixes)
-        whole_string.extend(suffix * number_of_suffixes)
+    if suffix:
+        possible_number_of_suffixes = remaining_length // len(suffix)
+        if possible_number_of_suffixes:
+            number_of_suffixes = randint(0, possible_number_of_suffixes)
+            whole_string.extend(suffix * number_of_suffixes)
 
     case = Parameters(s="".join(whole_string))
     correct_answer = Answer(substring="".join(substring), length=substring_length)
@@ -166,7 +176,7 @@ def test(function: Function) -> None:
     for case_index, test_case in enumerate(
         chain(
             starmap(make_test_case, TEST_CASES),
-            (short_test_case() for _ in range(100)),
+            # (short_test_case() for _ in range(100)),
             (long_test_case() for _ in range(10_000)),
         )
     ):
