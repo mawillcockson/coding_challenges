@@ -41,7 +41,7 @@ TEST_CASES = [
     ("pwwkew", "wke"),
     ("", ""),
     ("abcdefghijklmnop", "abcdefghijklmnop"),
-    ("12134", "2134"), # force backtracking
+    ("12134", "2134"),  # force backtracking
 ]
 LONGEST_STRING = 50_000
 ALL_CHARACTERS = list(set(ascii_letters + digits + punctuation))

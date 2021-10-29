@@ -25,17 +25,21 @@ Example 4:
 Input: s = ""
 Output: 0
 
- 
-
 Constraints:
 
-    0 <= s.length <= 5 * 10^4 (50_000)
-    s consists of English letters, digits, symbols and spaces.
+- 0 <= s.length <= 5 * 10^4 (50_000)
+- s consists of English letters, digits, symbols and spaces
+
+
+Note:
+
+This is similar to problem solved by KMP:
+https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm
 """
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import List, Set
+    from typing import Dict, List
 
     from test_solution import Answer
 
@@ -53,12 +57,17 @@ class Solution:
 
     def lengthOfLongestSubstring(self, s: str) -> "Answer":
         "longest substring without repeating characters"
-        current_substring_characters: "Set[str]" = set()
+        current_substring_characters: "Dict[str, int]" = {}
         max_unique_substring_length = 0
         current_substring: "List[str]" = []
         longest_unique_substring = current_substring
+        word_index = -1
+
         for character in s:
+            word_index += 1
+            # print(f"...{character}", end="")  # debug
             if character in current_substring_characters:
+                # print("!")  # debug
                 # current substring is no longer unique if this character is added
                 max_unique_substring_length = max(
                     max_unique_substring_length, len(current_substring_characters)
@@ -66,19 +75,46 @@ class Solution:
                 if len(current_substring) > len(longest_unique_substring):
                     longest_unique_substring = current_substring
 
-                # reset everything
-                current_substring_characters = {character}
-                current_substring = [character]
+                # where does this character occur in the current_substring?
+                character_index = current_substring_characters[character]
+
+                # drop all characters with indeces up to an including that position
+                # print(f"{current_substring} -> ", end="")  # debug
+                current_substring = current_substring[character_index + 1 :]
+                current_substring.append(character)
+                # print(repr(current_substring))  # debug
+
+                # print(f"{current_substring_characters} -> ", end="")  # debug
+                current_substring_characters = dict(
+                    zip(current_substring, range(len(current_substring)))
+                )
+                # print(current_substring_characters)  # debug
+
+                # print(f"word_index => {word_index} -> ", end="")  # debug
+                word_index = word_index - character_index - 1
+                # print(word_index)  # debug
+                if word_index < 0:
+                    print("\n")
+                    import pprint
+
+                    pprint.pprint(locals())
+                    raise Exception
                 continue
 
-            current_substring_characters.add(character)
+            current_substring_characters[character] = word_index
             current_substring.append(character)
+            # print("")  # debug
+
+        if len(current_substring) > max_unique_substring_length:
+            max_unique_substring_length = len(current_substring)
+            longest_unique_substring = current_substring
 
         if s and not max_unique_substring_length:
             # if there are characters in the string, but
             # max_unique_substring_length is still at 0, that means the loop
             # completed without ever encountering a non-unique character,
             # meaning the whole string is unique
+            print(f"max_unique_substring_length is len(s) = {len(s)}")  # debug
             max_unique_substring_length = len(s)
 
         if not TYPE_CHECKING and Answer is int:
