@@ -12,28 +12,13 @@ Person B says the first item they bought was flour, and that they used it.
 Which person is more likely to have an extra bag of flour?
 """
 from random import randint
-from typing import Optional, Tuple, Union
 
-NUMBER_OF_ITERATIONS = 1_000
+NUMBER_OF_ITERATIONS = 10_000
 FLOUR = True
 SUGAR = False
-Item = Union[type(FLOUR), type(SUGAR)]
-Items = Tuple[Item, Item]
 
 
-def person_A_requirement(first_item: Item, second_item: Item) -> Optional[Items]:
-    "only returns pairs that person A could have"
-    if first_item or second_item:
-        return (first_item, second_item)
-
-
-def person_B_requirement(first_item: Item, second_item: Item) -> Optional[Items]:
-    "only returns pairs that person B could have"
-    if first_item:
-        return (first_item, second_item)
-
-
-def main(iterations=NUMBER_OF_ITERATIONS) -> None:
+def main(iterations: int = NUMBER_OF_ITERATIONS) -> None:
     """
     print the percentage of the iterations where the selected person had the
     required item
@@ -51,13 +36,19 @@ def main(iterations=NUMBER_OF_ITERATIONS) -> None:
         first_item = FLOUR if randint(0, 1) else SUGAR
         second_item = FLOUR if randint(0, 1) else SUGAR
 
-        if person_A_requirement(first_item, second_item):
+        # only choose pairs that person A could have, based on their statement
+        # that one of the two items they have is flour
+        if first_item or second_item:
+            # person A has extra flour if both items are flour
             if first_item == second_item == FLOUR:
                 times_person_A_has_extra_flour += 1
             else:
                 times_person_A_does_not_have_extra_flour += 1
 
-        if person_B_requirement(first_item, second_item):
+        # only choose pairs that person B could have, based on their statement
+        # that the first item they bought is flour
+        if first_item:
+            # person B has extra flour if both items are flour
             if first_item == second_item == FLOUR:
                 times_person_B_has_extra_flour += 1
             else:
