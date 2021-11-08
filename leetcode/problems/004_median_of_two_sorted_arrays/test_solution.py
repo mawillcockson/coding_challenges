@@ -7,9 +7,9 @@ from importlib import import_module
 from itertools import chain, starmap
 from pathlib import Path
 from pprint import pformat
-from random import choices, randint, random, sample
+from random import randint, random
 from statistics import median
-from typing import Callable, List, NamedTuple, Optional, Tuple
+from typing import Callable, List, NamedTuple, Tuple
 
 
 class Parameters(NamedTuple):
@@ -39,23 +39,19 @@ MIN_INT = -MAX_INT
 
 
 def make_test_case(
-    nums1: Optional[List[int]] = None,
-    nums2: Optional[List[int]] = None,
-    correct_answer: Optional[float] = None,
+    nums1: List[int],
+    nums2: List[int],
+    correct_answer: float,
 ) -> TestCase:
-    """
-    generate a random test case, or make one from inputs
-    """
-    # ^ is bitwise XOR, and works with booleans
-    if (nums1 is None) ^ (nums2 is None) ^ (correct_answer is None):
-        raise ValueError("all parameters need to be given, or none")
+    "make a test case from inputs"
+    return TestCase(
+        Parameters(nums1=nums1, nums2=nums2),
+        correct_answer=correct_answer,
+    )
 
-    if nums1 is not None and nums2 is not None and correct_answer is not None:
-        return TestCase(
-            Parameters(nums1=nums1, nums2=nums2),
-            correct_answer=correct_answer,
-        )
 
+def generate_test_case() -> TestCase:
+    "generate a random test case"
     nums1_length = randint(0, MAX_LENGTH)
     if nums1_length == 0:
         nums2_length = randint(1, MAX_LENGTH)
@@ -82,7 +78,7 @@ def test(function: Function) -> None:
     for case_index, test_case in enumerate(
         chain(
             starmap(make_test_case, TEST_CASES),
-            (make_test_case() for _ in range(10_000)),
+            (generate_test_case() for _ in range(10_000)),
         )
     ):
         case_number = (
