@@ -62,6 +62,10 @@ def generate_test_case() -> TestCase:
     nums1 = [int(random() * (MAX_INT - MIN_INT) - MIN_INT) for _ in range(nums1_length)]
     nums2 = [int(random() * (MAX_INT - MIN_INT) - MIN_INT) for _ in range(nums2_length)]
 
+    # # more correct
+    # nums1 = [randint(MIN_INT, MAX_INT) for _ in range(nums1_length)]
+    # nums2 = [randint(MIN_INT, MAX_INT) for _ in range(nums2_length)]
+
     nums1.sort()
     nums2.sort()
     correct_answer = float(median([*nums1, *nums2]))
