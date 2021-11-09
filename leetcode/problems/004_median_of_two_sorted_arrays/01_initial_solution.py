@@ -1,5 +1,7 @@
 # pylint: disable=invalid-name
 """
+https://leetcode.com/problems/median-of-two-sorted-arrays/
+
 Given two sorted arrays nums1 and nums2 of size m and n respectively, return
 the median of the two sorted arrays.
 
@@ -51,11 +53,11 @@ def median_of_sorted(nums: List[int], length: int) -> float:
     if length == 1:
         return float(nums[0])
 
-    if length % 2 == 0:  # is even
+    if length % 2 == 1:  # is odd
         return float(nums[length // 2])
 
-    lower_median_index = length // 2
-    return (nums[lower_median_index] + nums[lower_median_index + 1]) / 2
+    upper_median_index = length // 2
+    return (nums[upper_median_index] + nums[upper_median_index - 1]) / 2
 
 
 class Solution:
@@ -76,3 +78,43 @@ class Solution:
             return median_of_sorted(nums2, nums2_length)
         if nums2_length == 0:
             return median_of_sorted(nums1, nums1_length)
+
+        nums1_lower = nums1[0]
+        nums1_upper = nums1[-1]
+        nums2_lower = nums2[0]
+        nums2_upper = nums2[-1]
+
+        # if the two overlap at at most 1 value, then the median is the median
+        # of the concatenation two lists
+        nums1_is_to_the_left = nums1_upper < nums2_lower
+        if nums1_is_to_the_left or nums2_upper < nums1_lower:
+            # |-------| |--|
+            if nums1_is_to_the_left:
+                left = nums1
+                left_len = nums1_length
+                right = nums2
+            else:
+                left = nums2
+                left_len = nums2_length
+                right = nums1
+
+            combined_length = nums1_length + nums2_length
+            upper_median_index = combined_length // 2
+            # is the upper_median_index in the left- or right-hand list?
+            # left_len - 1 is the highest index of the left-hand list
+            # so this is quicker than (upper_median_index > left_len - 1)
+            if upper_median_index >= left_len:
+                upper_median = right[upper_median_index - left_len]
+            else:
+                upper_median = left[upper_median_index]
+
+            # is the combined_length odd?
+            if combined_length % 2 == 1:
+                return upper_median
+
+            lower_median_index = upper_median_index - 1
+            # is the lower_median_index in the left- or right-hand list?
+            if upper_median_index - 1 < left_len:
+                upper_median = left[upper_median_index - left_len]
+            else:
+                upper_median = left[
