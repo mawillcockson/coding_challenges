@@ -94,11 +94,12 @@ def test(function: Function) -> None:
             (generate_test_case() for _ in range(10_000)),
         )
     ):
-        case_number = (
-            str(case_index + 1) if case_index + 1 <= len(TEST_CASES) else "random"
-        )
-        if case_number != "random":
+        random_case = case_index + 1 > len(TEST_CASES)
+        if not random_case:
+            case_number = str(case_index + 1)
             print(f"test #{case_number}")
+        else:
+            case_number = "random"
 
         case = test_case.case
         correct_answer = test_case.correct_answer
@@ -106,7 +107,7 @@ def test(function: Function) -> None:
         try:
             answer = function(*case)
         except NotImplementedError:
-            if case_number != "random":
+            if not random_case:
                 print("skipped")
             continue
 
