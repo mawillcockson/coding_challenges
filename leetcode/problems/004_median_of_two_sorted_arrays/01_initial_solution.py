@@ -91,29 +91,15 @@ class Solution:
         # if the two overlap at at most 1 value, then the median is the median
         # of the concatenation two lists
         if nums1_upper <= nums2_lower:
-            # |---------| |=====|
-            #    nums1     nums2
+            # |---------||=====|
+            #    nums1    nums2
             combined_length = nums1_length + nums2_length
-
-            if nums1_upper == nums2_lower:
-                # |---------|=====|
-                #    nums1   nums2
-                del nums1[-1]
-                combined_length -= 1
-
             return median_of_sorted([*nums1, *nums2], combined_length)
 
         if nums2_upper <= nums1_lower:
-            # |=====| |---------|
-            #  nums2     nums1
+            # |=====||---------|
+            #  nums2    nums1
             combined_length = nums1_length + nums2_length
-
-            if nums2_upper == nums1_lower:
-                # |=====|---------|
-                #  nums2   nums1
-                del nums2[-1]
-                combined_length -= 1
-
             return median_of_sorted([*nums2, *nums1], combined_length)
 
         # one of
@@ -125,6 +111,6 @@ class Solution:
         #  nums1  nums2
         # |======|+++++|======|
         #  nums2  nums1
-        # |+++++++++++++|
+        # ||+++++++++++++||
         #   nums1 nums2
         raise NotImplementedError
