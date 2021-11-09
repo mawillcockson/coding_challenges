@@ -46,12 +46,31 @@ Constraints:
 from typing import List
 
 
+def median_of_sorted(nums: List[int], length: int) -> float:
+    if length == 1:
+        return float(nums[0])
+
+    if length % 2 == 0:  # is even
+        return float(nums[length // 2])
+
+    lower_median_index = length // 2
+    return (nums[lower_median_index] + nums[lower_median_index + 1]) / 2
+
+
 class Solution:
     "required by leetcode"
 
     def findMedianSortedArrays(self, nums1: List[int], nums2: List[int]) -> float:
         """
         find the median of an array made from the sorted combination of two arrays
+
         the two arrays are passed in pre-sorted
         """
-        pass
+        nums1_length = len(nums1)
+        nums2_length = len(nums2)
+
+        # shortcut cases
+        if nums1_length == 0:
+            return median_of_sorted(nums2, nums2_length)
+        if nums2_length == 0:
+            return median_of_sorted(nums1, nums1_length)
