@@ -7,8 +7,8 @@ def median_of_sorted(nums: List[int]) -> float:
     if length == 1:
         return float(nums[0])
 
-    if length % 2 == 0:  # is even
-        return float(nums[length // 2])
+    if length % 2 == 1:  # is odd
+        return float(nums[length // 2 + 1])
     
     lower_median_index = length // 2
     return (nums[lower_median_index] + nums[lower_median_index + 1]) / 2
