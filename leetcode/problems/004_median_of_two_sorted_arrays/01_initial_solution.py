@@ -47,6 +47,7 @@ from typing import List
 
 
 def median_of_sorted(nums: List[int], length: int) -> float:
+    "find the median of an already sorted list"
     if length == 1:
         return float(nums[0])
 
@@ -58,6 +59,7 @@ def median_of_sorted(nums: List[int], length: int) -> float:
 
 
 class Solution:
+    # pylint: disable=no-self-use,too-few-public-methods
     "required by leetcode"
 
     def findMedianSortedArrays(self, nums1: List[int], nums2: List[int]) -> float:
