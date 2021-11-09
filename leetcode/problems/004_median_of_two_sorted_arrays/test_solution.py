@@ -42,6 +42,7 @@ TEST_CASES: List[Tuple[List[int], List[int], float]] = [
     ([], [1], 1.0),
     ([2], [], 2.0),
 ]
+NUM_RANDOM_TESTS = 10_000
 MAX_LENGTH = 1_000
 MAX_INT = 10 ** 6
 MIN_INT = -MAX_INT
@@ -88,10 +89,11 @@ def generate_test_case() -> TestCase:
 
 def test(function: Function) -> None:
     "performs tests on the function to simulate the LeetCode submission"
+    passed_count = 0
     for case_index, test_case in enumerate(
         chain(
             starmap(make_test_case, TEST_CASES),
-            (generate_test_case() for _ in range(10_000)),
+            (generate_test_case() for _ in range(NUM_RANDOM_TESTS)),
         )
     ):
         random_case = case_index + 1 > len(TEST_CASES)
@@ -106,6 +108,7 @@ def test(function: Function) -> None:
 
         try:
             answer = function(*case)
+            passed_count += 1
         except NotImplementedError:
             if not random_case:
                 print("skipped")
@@ -119,7 +122,7 @@ def test(function: Function) -> None:
             # breakpoint()  # pylint: disable=forgotten-debug-statement
             sys.exit(1)
 
-    print("passed")
+    print(f"passed {passed_count} out of {len(TEST_CASES) + NUM_RANDOM_TESTS}")
 
 
 def check(answer: Answer, correct_answer: Answer) -> bool:
