@@ -99,7 +99,10 @@ def test(function: Function) -> None:
         case = test_case.case
         correct_answer = test_case.correct_answer
 
-        answer = function(*case)
+        try:
+            answer = function(*case)
+        except NotImplementedError:
+            continue
         if not answer or answer != correct_answer:
             print(f"failure for case #{case_number}:")
             print(f"case:\n{pformat(case)}")
