@@ -27,6 +27,11 @@ class TestCase(NamedTuple):
 Function = Callable[[List[int], List[int]], float]
 
 TEST_CASES: List[Tuple[List[int], List[int], float]] = [
+    ([0, 8], [1, 1, 9], 1.0),
+    ([0, 8], [1, 1, 7], 1.0),
+    ([1, 3, 7, 9], [2, 5, 8], 5.0),
+    ([0, 0], [1, 1, 1], 1.0),
+    ([0, 0, 0, 3], [1, 4], 0.5),
     ([1, 3], [2], 2.0),
     ([1, 2], [3, 4], 2.5),
     ([0, 0], [0, 0], 0.0),
