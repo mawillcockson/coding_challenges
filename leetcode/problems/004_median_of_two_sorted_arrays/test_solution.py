@@ -1,6 +1,7 @@
 """
 tests the solution in the named file
 """
+import math
 import sys
 from argparse import ArgumentParser
 from importlib import import_module
@@ -18,13 +19,16 @@ class Parameters(NamedTuple):
     nums2: List[int]
 
 
+Answer = float
+
+
 class TestCase(NamedTuple):
     "a test case"
     case: Parameters
-    correct_answer: float
+    correct_answer: Answer
 
 
-Function = Callable[[List[int], List[int]], float]
+Function = Callable[[List[int], List[int]], Answer]
 
 TEST_CASES: List[Tuple[List[int], List[int], float]] = [
     ([0, 8], [1, 1, 9], 1.0),
@@ -46,7 +50,7 @@ MIN_INT = -MAX_INT
 def make_test_case(
     nums1: List[int],
     nums2: List[int],
-    correct_answer: float,
+    correct_answer: Answer,
 ) -> TestCase:
     "make a test case from inputs"
     return TestCase(
@@ -73,7 +77,7 @@ def generate_test_case() -> TestCase:
 
     nums1.sort()
     nums2.sort()
-    correct_answer = float(median([*nums1, *nums2]))
+    correct_answer = Answer(median([*nums1, *nums2]))
 
     if randint(0, 1):
         return TestCase(
@@ -102,8 +106,11 @@ def test(function: Function) -> None:
         try:
             answer = function(*case)
         except NotImplementedError:
+            if case_number != "random":
+                print("skipped")
             continue
-        if not answer or answer != correct_answer:
+
+        if not check(answer, correct_answer):
             print(f"failure for case #{case_number}:")
             print(f"case:\n{pformat(case)}")
             print(f"correct answer:\n{correct_answer}")
@@ -112,6 +119,11 @@ def test(function: Function) -> None:
             sys.exit(1)
 
     print("passed")
+
+
+def check(answer: Answer, correct_answer: Answer) -> bool:
+    "check if the answer is correct"
+    return math.isclose(answer, correct_answer)
 
 
 if __name__ == "__main__":
