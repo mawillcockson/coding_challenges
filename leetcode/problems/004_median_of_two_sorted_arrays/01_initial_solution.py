@@ -131,7 +131,7 @@ class Solution:
 
         nums1_index = 0
         nums2_index = 0
-        right_median_index = combined_length // 2
+        right_median_index = (combined_length - 2) // 2
 
         # <= is necessary, and < won't work because they could be equal, in
         # which case it doesn't matter which one is chosen as left_median, and
@@ -139,13 +139,15 @@ class Solution:
         if nums1_lower <= nums2_lower:
             left_median = nums1[nums1_index]
             right_median = nums2[nums2_index]
-            if DEBUGGING:
-                print(f"{nums1_lower} <= {nums2_lower}")
         else:
             left_median = nums2[nums2_index]
             right_median = nums1[nums1_index]
-            if DEBUGGING:
-                print(f"{nums1_lower} > {nums2_lower}")
+
+        if DEBUGGING:
+            print(f"nums1 -> {nums1}")
+            print(f"nums2 -> {nums2}")
+            print(f"left_median  -> {left_median}")
+            print(f"right_median -> {right_median}")
 
         while True:
             if nums1_index + nums2_index == right_median_index:
