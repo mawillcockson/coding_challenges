@@ -49,6 +49,7 @@ NUM_RANDOM_TESTS = 10_000
 MAX_LENGTH = 1_000
 MAX_INT = 10 ** 6
 MIN_INT = -MAX_INT
+DEBUGGING = False
 
 
 def make_test_case(
@@ -103,8 +104,9 @@ def test(function: Function) -> None:
         if not random_case:
             case_number = str(case_index + 1)
             print(f"test #{case_number}")
+        elif DEBUGGING:
+            sys.exit("passed all explicit")
         else:
-            # sys.exit("passed all explicit")
             case_number = "random"
 
         case = test_case.case
@@ -145,4 +147,6 @@ if __name__ == "__main__":
 
     sys.path.append(str(path.parent))
     module = import_module(path.stem)
+    global DEBUGGING
+    DEBUGGING = bool(module.DEBUGGING)  # type: ignore
     test(module.Solution().findMedianSortedArrays)  # type: ignore
