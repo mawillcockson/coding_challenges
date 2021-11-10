@@ -131,17 +131,19 @@ class Solution:
 
         nums1_index = 0
         nums2_index = 0
+        nums1_value = nums1_lower
+        nums2_value = nums2_lower
         right_median_index = (combined_length - 2) // 2
 
         # <= is necessary, and < won't work because they could be equal, in
         # which case it doesn't matter which one is chosen as left_median, and
         # which one is chosen as right_median
         if nums1_lower <= nums2_lower:
-            left_median = nums1[nums1_index]
-            right_median = nums2[nums2_index]
+            left_median = nums1_lower
+            right_median = nums2_lower
         else:
-            left_median = nums2[nums2_index]
-            right_median = nums1[nums1_index]
+            left_median = nums2_lower
+            right_median = nums1_lower
 
         if DEBUGGING:
             print(f"nums1 -> {nums1}")
@@ -177,18 +179,22 @@ class Solution:
                     ) / 2
                 return float(nums1[right_median_index - nums2_index])
 
-            left_median = right_median
-            if nums1[nums1_index + 1] >= nums2[nums2_index + 1]:
+            if nums1_value >= nums2_value:
                 nums2_index += 1
-                right_median = nums2[nums2_index]
-                if DEBUGGING:
-                    print(f"advancing nums2_index -> {nums2_index}")
+                nums2_value = nums2[nums2_index]
             else:
                 nums1_index += 1
-                right_median = nums1[nums1_index]
-                if DEBUGGING:
-                    print(f"advancing nums1_index -> {nums1_index}")
+                nums1_value = nums1[nums1_index]
+
+            if nums1_value >= nums2_value:
+                left_median = nums2_value
+                right_median = nums1_value
+            else:
+                left_median = nums1_value
+                right_median = nums2_value
 
             if DEBUGGING:
+                print(f"nums1_value  -> {nums1_value}")
+                print(f"nums2_value  -> {nums2_value}")
                 print(f"left_median  -> {left_median}")
                 print(f"right_median -> {right_median}")
