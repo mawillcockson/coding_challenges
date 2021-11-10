@@ -121,28 +121,33 @@ class Solution:
         # which case it doesn't matter which one is chosen as left_median, and
         # which one is chosen as right_median
         if nums1[nums1_index] <= nums2[nums2_index]:
-            left_median  = nums1[nums1_index]
+            left_median = nums1[nums1_index]
             right_median = nums2[nums2_index]
         else:
             left_median = nums2[nums2_index]
             right_median = nums1[nums1_index]
-        
+
         while True:
             if nums1_index + nums2_index == right_median_index:
                 if combined_length % 2 == 0:  # is even
                     return (left_median + right_median) / 2
-                return right_median
+                return float(right_median)
 
             if nums1_index + 1 == nums1_length:
                 if combined_length % 2 == 0:
-                    return (nums2[right_median_index - nums1_index] + nums2[right_median_index - nums1_index - 1]) / 2
-                return nums2[right_median_index - nums1_index]
+                    return (
+                        nums2[right_median_index - nums1_index]
+                        + nums2[right_median_index - nums1_index - 1]
+                    ) / 2
+                return float(nums2[right_median_index - nums1_index])
 
             if nums2_index + 1 == nums2_length:
                 if combined_length % 2 == 0:
-                    return (nums1[right_median_index - nums2_index] + nums1[right_median_index - nums2_index - 1]) / 2
-                return nums1[right_median_index - nums2_index]
-
+                    return (
+                        nums1[right_median_index - nums2_index]
+                        + nums1[right_median_index - nums2_index - 1]
+                    ) / 2
+                return float(nums1[right_median_index - nums2_index])
 
             if nums1[nums1_index] >= nums2[nums2_index]:
                 nums2_index += 1
