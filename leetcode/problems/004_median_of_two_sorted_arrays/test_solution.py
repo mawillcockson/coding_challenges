@@ -41,6 +41,8 @@ TEST_CASES: List[Tuple[List[int], List[int], float]] = [
     ([0, 0], [0, 0], 0.0),
     ([], [1], 1.0),
     ([2], [], 2.0),
+    ([0], [1], 1.0),
+    ([1], [0], 1.0),
 ]
 NUM_RANDOM_TESTS = 10_000
 MAX_LENGTH = 1_000
