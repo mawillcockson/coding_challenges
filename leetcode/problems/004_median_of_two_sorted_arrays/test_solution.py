@@ -101,6 +101,7 @@ def test(function: Function) -> None:
             case_number = str(case_index + 1)
             print(f"test #{case_number}")
         else:
+            sys.exit("passed all explicit")
             case_number = "random"
 
         case = test_case.case
