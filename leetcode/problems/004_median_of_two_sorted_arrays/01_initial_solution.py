@@ -136,24 +136,22 @@ class Solution:
         combined: List[int] = []
 
         while nums1_index + nums2_index <= combined_length - 2:
-            if nums1_value <= nums2_value:
-                combined.append(nums1_value)
+            if nums1[nums1_index] <= nums2[nums2_index]:
+                combined.append(nums1[nums1_index])
                 nums1_index += 1
-                nums1_value = nums1[nums1_index]
             else:
-                combined.append(nums2_value)
+                combined.append(nums2[nums2_index])
                 nums2_index += 1
-                nums2_value = nums2[nums2_index]
 
             if nums1_index + 1 == nums1_length:
                 if DEBUGGING:
                     print("exhausted nums1")
-                combined.extend(nums2[nums2_index + 1:])
+                combined.extend(nums2[nums2_index:])
                 break
             if nums2_index + 1 == nums2_length:
                 if DEBUGGING:
                     print("exhausted nums2")
-                combined.extend(nums1[nums1_index + 1:])
+                combined.extend(nums1[nums1_index:])
                 break
 
 
