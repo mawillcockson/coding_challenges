@@ -177,17 +177,18 @@ class Solution:
                     ) / 2
                 return float(nums1[right_median_index - nums2_index])
 
-            if nums1[nums1_index] >= nums2[nums2_index]:
+            left_median = right_median
+            if nums1[nums1_index + 1] >= nums2[nums2_index + 1]:
                 nums2_index += 1
+                right_median = nums2[nums2_index]
                 if DEBUGGING:
                     print(f"advancing nums2_index -> {nums2_index}")
             else:
                 nums1_index += 1
+                right_median = nums1[nums1_index]
                 if DEBUGGING:
                     print(f"advancing nums1_index -> {nums1_index}")
 
-            left_median = right_median
-            right_median = max(nums1[nums1_index], nums2[nums2_index])
             if DEBUGGING:
                 print(f"left_median  -> {left_median}")
                 print(f"right_median -> {right_median}")
