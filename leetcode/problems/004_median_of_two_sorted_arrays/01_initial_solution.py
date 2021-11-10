@@ -83,6 +83,7 @@ class Solution:
             #    nums1    nums2
             return median_of_sorted(nums1, nums1_length)
 
+        combined_length = nums1_length + nums2_length
         nums1_lower = nums1[0]
         nums1_upper = nums1[-1]
         nums2_lower = nums2[0]
@@ -93,13 +94,11 @@ class Solution:
         if nums1_upper <= nums2_lower:
             # |---------||=====|
             #    nums1    nums2
-            combined_length = nums1_length + nums2_length
             return median_of_sorted([*nums1, *nums2], combined_length)
 
         if nums2_upper <= nums1_lower:
             # |=====||---------|
             #  nums2    nums1
-            combined_length = nums1_length + nums2_length
             return median_of_sorted([*nums2, *nums1], combined_length)
 
         # one of
@@ -113,4 +112,38 @@ class Solution:
         #  nums2  nums1
         # ||+++++++++++++||
         #   nums1 nums2
-        raise NotImplementedError
+
+        nums1_index = 0
+        nums2_index = 0
+        right_median_index = combined_length // 2
+
+        # <= is necessary, and < won't work because they could be equal, in
+        # which case it doesn't matter which one is chosen as left_median, and
+        # which one is chosen as right_median
+        if nums1[nums1_index] <= nums2[nums2_index]:
+            left_median  = nums1[nums1_index]
+            right_median = nums2[nums2_index]
+        else:
+            left_median = nums2[nums2_index]
+            right_median = nums1[nums1_index]
+        
+        while True:
+            if nums1_index + nums2_index == right_median_index:
+                if combined_length % 2 == 0:  # is even
+                    return (left_median + right_median) / 2
+                return right_median
+
+            if nums1_index + 1 == nums1_length or nums2_index + 1 == nums2_length:
+                number_of_elements_until_right_median = right_median_index - (nums1_index + nums2_index)
+                if nums1_index + 1 == nums1_length:
+                    return nums2[nums2_index + number_of_elements_until_right_median]
+                else:
+                    return nums1[nums1_index + number_of_elements_until_right_median]
+
+            if nums1[nums1_index] >= nums2[nums2_index]:
+                nums2_index += 1
+            else:
+                nums1_index += 1
+
+            left_median = right_median
+            right_median = max(nums1[nums1_index], nums2[nums2_index])
