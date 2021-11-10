@@ -48,6 +48,14 @@ Constraints:
 from typing import List
 
 
+try:
+    import test_solution
+except ImportError:
+    DEBUGGING = False
+else:
+    DEBUGGING = True
+
+
 def median_of_sorted(nums: List[int], length: int) -> float:
     "find the median of an already sorted list"
     if length == 1:
@@ -77,10 +85,14 @@ class Solution:
         if nums1_length == 0:
             #  ||   |=====|
             # nums1  nums2
+            if DEBUGGING:
+                print("nums1 = [] shortcut")
             return median_of_sorted(nums2, nums2_length)
         if nums2_length == 0:
             # |---------|  ||
             #    nums1    nums2
+            if DEBUGGING:
+                print("nums2 = [] shortcut")
             return median_of_sorted(nums1, nums1_length)
 
         combined_length = nums1_length + nums2_length
@@ -94,11 +106,15 @@ class Solution:
         if nums1_upper <= nums2_lower:
             # |---------||=====|
             #    nums1    nums2
+            if DEBUGGING:
+                print("|-nums1-||=nums2=|")
             return median_of_sorted([*nums1, *nums2], combined_length)
 
         if nums2_upper <= nums1_lower:
             # |=====||---------|
             #  nums2    nums1
+            if DEBUGGING:
+                print("|=nums2=||-nums1-|")
             return median_of_sorted([*nums2, *nums1], combined_length)
 
         # one of
@@ -120,20 +136,28 @@ class Solution:
         # <= is necessary, and < won't work because they could be equal, in
         # which case it doesn't matter which one is chosen as left_median, and
         # which one is chosen as right_median
-        if nums1[nums1_index] <= nums2[nums2_index]:
+        if nums1_lower <= nums2_lower:
             left_median = nums1[nums1_index]
             right_median = nums2[nums2_index]
+            if DEBUGGING:
+                print(f"{nums1_lower} <= {nums2_lower}")
         else:
             left_median = nums2[nums2_index]
             right_median = nums1[nums1_index]
+            if DEBUGGING:
+                print(f"{nums1_lower} > {nums2_lower}")
 
         while True:
             if nums1_index + nums2_index == right_median_index:
+                if DEBUGGING:
+                    print("reached median index")
                 if combined_length % 2 == 0:  # is even
                     return (left_median + right_median) / 2
                 return float(right_median)
 
             if nums1_index + 1 == nums1_length:
+                if DEBUGGING:
+                    print("exhausted nums1")
                 if combined_length % 2 == 0:
                     return (
                         nums2[right_median_index - nums1_index]
@@ -142,6 +166,8 @@ class Solution:
                 return float(nums2[right_median_index - nums1_index])
 
             if nums2_index + 1 == nums2_length:
+                if DEBUGGING:
+                    print("exhausted nums2")
                 if combined_length % 2 == 0:
                     return (
                         nums1[right_median_index - nums2_index]
@@ -151,8 +177,15 @@ class Solution:
 
             if nums1[nums1_index] >= nums2[nums2_index]:
                 nums2_index += 1
+                if DEBUGGING:
+                    print(f"advancing nums2_index -> {nums2_index}")
             else:
                 nums1_index += 1
+                if DEBUGGING:
+                    print(f"advancing nums1_index -> {nums1_index}")
 
             left_median = right_median
             right_median = max(nums1[nums1_index], nums2[nums2_index])
+            if DEBUGGING:
+                print(f"left_median  -> {left_median}")
+                print(f"right_median -> {right_median}")
