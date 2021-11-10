@@ -133,68 +133,27 @@ class Solution:
         nums2_index = 0
         nums1_value = nums1_lower
         nums2_value = nums2_lower
-        right_median_index = (combined_length - 2) // 2
+        combined: List[int] = []
 
-        # <= is necessary, and < won't work because they could be equal, in
-        # which case it doesn't matter which one is chosen as left_median, and
-        # which one is chosen as right_median
-        if nums1_lower <= nums2_lower:
-            left_median = nums1_lower
-            right_median = nums2_lower
-        else:
-            left_median = nums2_lower
-            right_median = nums1_lower
-
-        if DEBUGGING:
-            print(f"nums1 -> {nums1}")
-            print(f"nums2 -> {nums2}")
-            print(f"left_median  -> {left_median}")
-            print(f"right_median -> {right_median}")
-
-        while True:
-            if nums1_index + nums2_index == right_median_index:
-                if DEBUGGING:
-                    print("reached median index")
-                if combined_length % 2 == 0:  # is even
-                    return (left_median + right_median) / 2
-                return float(right_median)
-
+        while nums1_index + nums2_index <= combined_length - 2:
             if nums1_index + 1 == nums1_length:
                 if DEBUGGING:
                     print("exhausted nums1")
-                if combined_length % 2 == 0:
-                    return (
-                        nums2[right_median_index - nums1_index]
-                        + nums2[right_median_index - nums1_index - 1]
-                    ) / 2
-                return float(nums2[right_median_index - nums1_index])
-
+                combined.extend(nums2[nums2_index + 1:])
+                break
             if nums2_index + 1 == nums2_length:
                 if DEBUGGING:
                     print("exhausted nums2")
-                if combined_length % 2 == 0:
-                    return (
-                        nums1[right_median_index - nums2_index]
-                        + nums1[right_median_index - nums2_index - 1]
-                    ) / 2
-                return float(nums1[right_median_index - nums2_index])
+                combined.extend(nums1[nums1_index + 1:])
+                break
 
             if nums1_value >= nums2_value:
-                nums2_index += 1
-                nums2_value = nums2[nums2_index]
-            else:
+                combined.append(nums1_value)
                 nums1_index += 1
                 nums1_value = nums1[nums1_index]
-
-            if nums1_value >= nums2_value:
-                left_median = nums2_value
-                right_median = nums1_value
             else:
-                left_median = nums1_value
-                right_median = nums2_value
+                combined.append(nums2_value)
+                nums2_index += 1
+                nums2_value = nums2[nums2_index]
 
-            if DEBUGGING:
-                print(f"nums1_value  -> {nums1_value}")
-                print(f"nums2_value  -> {nums2_value}")
-                print(f"left_median  -> {left_median}")
-                print(f"right_median -> {right_median}")
+        return median_of_sorted(combined, combined_length)
