@@ -48,11 +48,14 @@ Constraints:
 from typing import List
 
 try:
+    # pylint: disable=unused-import
     import test_solution
 except ImportError:
     DEBUGGING = False
 else:
     DEBUGGING = True
+
+DEBUGGING = False
 
 
 def median_of_sorted(nums: List[int], length: int) -> float:
@@ -130,8 +133,6 @@ class Solution:
 
         nums1_index = 0
         nums2_index = 0
-        nums1_value = nums1_lower
-        nums2_value = nums2_lower
         combined: List[int] = []
 
         if DEBUGGING:
