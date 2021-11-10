@@ -147,6 +147,5 @@ if __name__ == "__main__":
 
     sys.path.append(str(path.parent))
     module = import_module(path.stem)
-    global DEBUGGING
     DEBUGGING = bool(module.DEBUGGING)  # type: ignore
     test(module.Solution().findMedianSortedArrays)  # type: ignore
