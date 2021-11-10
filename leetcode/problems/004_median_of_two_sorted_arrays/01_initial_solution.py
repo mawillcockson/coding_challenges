@@ -133,12 +133,16 @@ class Solution:
                     return (left_median + right_median) / 2
                 return right_median
 
-            if nums1_index + 1 == nums1_length or nums2_index + 1 == nums2_length:
-                number_of_elements_until_right_median = right_median_index - (nums1_index + nums2_index)
-                if nums1_index + 1 == nums1_length:
-                    return nums2[nums2_index + number_of_elements_until_right_median]
-                else:
-                    return nums1[nums1_index + number_of_elements_until_right_median]
+            if nums1_index + 1 == nums1_length:
+                if combined_length % 2 == 0:
+                    return (nums2[right_median_index - nums1_index] + nums2[right_median_index - nums1_index - 1]) / 2
+                return nums2[right_median_index - nums1_index]
+
+            if nums2_index + 1 == nums2_length:
+                if combined_length % 2 == 0:
+                    return (nums1[right_median_index - nums2_index] + nums1[right_median_index - nums2_index - 1]) / 2
+                return nums1[right_median_index - nums2_index]
+
 
             if nums1[nums1_index] >= nums2[nums2_index]:
                 nums2_index += 1
