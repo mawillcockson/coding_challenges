@@ -44,6 +44,11 @@ Constraints:
 - 0 <= n <= 1000
 - 1 <= m + n <= 2000
 - -10^6 <= nums1[i], nums2[i] <= 10^6
+
+Not having read these, at least the title of one confirms my suspicion that
+binary search could be used here:
+- https://medium.com/@hazemu/finding-the-median-of-2-sorted-arrays-in-logarithmic-time-1d3f2ecbeb46
+- https://youtu.be/LPFhl65R7ww
 """
 from typing import List
 
