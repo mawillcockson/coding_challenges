@@ -151,16 +151,14 @@ class Solution:
                 if DEBUGGING:
                     print(f"advancing nums2_index -> {nums2_index}")
 
-            if nums1_index + 1 == nums1_length:
+            if nums1_index + 1 > nums1_length:
                 if DEBUGGING:
                     print("exhausted nums1")
-                combined.append(nums1[nums1_index])
                 combined.extend(nums2[nums2_index:])
                 break
-            if nums2_index + 1 == nums2_length:
+            if nums2_index + 1 > nums2_length:
                 if DEBUGGING:
                     print("exhausted nums2")
-                combined.append(nums2[nums2_index])
                 combined.extend(nums1[nums1_index:])
                 break
 
