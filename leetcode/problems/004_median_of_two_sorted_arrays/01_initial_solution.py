@@ -47,15 +47,12 @@ Constraints:
 """
 from typing import List
 
-
 try:
     import test_solution
 except ImportError:
     DEBUGGING = False
 else:
     DEBUGGING = True
-
-DEBUGGING = False
 
 
 def median_of_sorted(nums: List[int], length: int) -> float:
@@ -137,13 +134,22 @@ class Solution:
         nums2_value = nums2_lower
         combined: List[int] = []
 
+        if DEBUGGING:
+            print(f"nums1 -> {nums1}")
+            print(f"nums2 -> {nums2}")
+
         while nums1_index + nums2_index <= combined_length - 2:
             if nums1[nums1_index] <= nums2[nums2_index]:
                 combined.append(nums1[nums1_index])
                 nums1_index += 1
+                if DEBUGGING:
+                    print(f"combined +> {combined[-1]}")
+                    print(f"advancing nums1_index -> {nums1_index}")
             else:
                 combined.append(nums2[nums2_index])
                 nums2_index += 1
+                if DEBUGGING:
+                    print(f"advancing nums2_index -> {nums2_index}")
 
             if nums1_index + 1 == nums1_length:
                 if DEBUGGING:
@@ -156,7 +162,7 @@ class Solution:
                 combined.extend(nums1[nums1_index:])
                 break
 
-
         if DEBUGGING:
             print(f"combined -> {combined}")
+
         return median_of_sorted(combined, combined_length)
