@@ -55,6 +55,8 @@ except ImportError:
 else:
     DEBUGGING = True
 
+DEBUGGING = False
+
 
 def median_of_sorted(nums: List[int], length: int) -> float:
     "find the median of an already sorted list"
