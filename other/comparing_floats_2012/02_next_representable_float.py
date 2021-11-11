@@ -1,7 +1,9 @@
 import math
 import sys
 
-assert sys.version_info >= (3, 9), "Requires Python 3.9 or higher"
+MANTISSA_DIGITS = sys.float_info.mant_dig
+SMALLEST_INTERVAL = sys.float_info.epsilon
 
-print(f"{1.0:.52f}")
-print(f"{math.nextafter(1.0, math.inf):.52f}")
+
+print(f"{1.0:.{MANTISSA_DIGITS}f}")
+print(f"{1.0 + SMALLEST_INTERVAL:.{MANTISSA_DIGITS}f}")
