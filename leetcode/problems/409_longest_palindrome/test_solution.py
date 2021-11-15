@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 """
 tests the solution in the named file
 
@@ -29,21 +30,19 @@ Constraints:
 - s consists of lowercase and/or uppercase English letters only.
 """
 import inspect
-import math
 import string
 import sys
 from argparse import ArgumentParser
-from collections import Counter
 from copy import copy
 from importlib import import_module
 from itertools import chain, starmap
 from pathlib import Path
 from pprint import pformat
 from random import choices, randint, randrange, shuffle
-from typing import Callable, Counter, List, NamedTuple, Sequence, Tuple, TypeVar
+from typing import Callable, List, NamedTuple, Sequence, Tuple, TypeVar
 
 
-class EmptyClass:
+class EmptyClass:  # pylint: disable=too-few-public-methods
     "empty class for attribute comparison"
 
 
@@ -204,13 +203,13 @@ def is_palindrome(sequence: Sequence[T]) -> bool:
     "determines if sequence is a palindrome"
     # print(repr(sequence))  # debug
     length = len(sequence)
-    if length in [0,1]:
+    if length in [0, 1]:
         return True
 
     half = length // 2
-    if length % 2 == 0:
-        # print(f"{sequence[:half]} =?= {sequence[:half - 1:-1]}")  # debug
-        return sequence[:half] == sequence[:half - 1:-1]
+    if length % 2 == 0:  # is odd
+        # print(f"{sequence[:half]} =?= {sequence[: half - 1 : -1]}")  # debug
+        return sequence[:half] == sequence[: half - 1 : -1]
     # print(f"{sequence[:half]} =?= {sequence[:half:-1]}")  # debug
     return sequence[:half] == sequence[:half:-1]
 
@@ -240,6 +239,6 @@ if __name__ == "__main__":
             f"more than one solution method name found; pick one of {', '.join(solution_methods)}"
         )
     if len(solution_methods) < 1:
-        raise Exception(f"no solution methods found")
+        raise Exception("no solution methods found")
 
     test(getattr(solution, solution_methods[0]))  # type: ignore

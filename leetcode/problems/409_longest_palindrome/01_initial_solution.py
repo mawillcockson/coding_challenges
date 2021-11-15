@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 """
 https://leetcode.com/problems/longest-palindrome/
 
@@ -26,9 +27,8 @@ Constraints:
 - 1 <= s.length <= 2000
 - s consists of lowercase and/or uppercase English letters only.
 """
-from typing import TYPE_CHECKING, Counter
 from collections import Counter
-
+from typing import TYPE_CHECKING
 
 DEBUGGING = True
 
@@ -38,8 +38,11 @@ try:
 except ImportError:
     DEBUGGING = False
 
+
 class Solution:
     "required by leetcode"
+    # pylint: disable=too-few-public-methods
+
     def longestPalindrome(self, s: str) -> int:
         """
         return the length of the longest palindrome constructible using only
@@ -86,4 +89,3 @@ class Solution:
         # }
         # Then, the counts of the even ones can be halved and summed, and if
         # there are any 1-count letters, the sum can be incremented.
-        pass
