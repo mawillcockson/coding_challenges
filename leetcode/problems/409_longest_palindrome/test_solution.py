@@ -39,11 +39,12 @@ from itertools import chain, cycle, starmap
 from pathlib import Path
 from pprint import pformat
 from random import choices, randint, randrange, shuffle
-from typing import Callable, List, NamedTuple, Sequence, Tuple, TypeVar
+from typing import Callable, List, NamedTuple, Sequence, Tuple, TypeVar, Union
 
 __all__ = [
     "Counter",
     "Answer",
+    "AnswerType",
     "TestCase",
     "Parameters",
     "test",
@@ -77,7 +78,8 @@ class Parameters(NamedTuple):
     s: str
 
 
-Answer = str
+AnswerType = TypeVar("AnswerType", int, str)
+Answer = Union[int, str]
 
 
 class TestCase(NamedTuple):
@@ -240,7 +242,15 @@ def test(function: Function) -> None:
 
 def check(answer: Answer, correct_answer: Answer) -> bool:
     "check if the answer is correct"
-    return is_palindrome(answer) and Counter(answer) == Counter(correct_answer)
+    if isinstance(answer, int) and isinstance(correct_answer, int):
+        return answer == correct_answer
+    if isinstance(answer, str) and isinstance(correct_answer, str):
+        return is_palindrome(answer) and Counter(answer) == Counter(correct_answer)
+
+    raise TypeError(
+        "need [int, int] or [str, str]; "
+        f"got [{type(answer).__name__}, {type(correct_answer).__name__}]"
+    )
 
 
 def is_palindrome(sequence: Sequence[T]) -> bool:

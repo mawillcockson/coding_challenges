@@ -40,7 +40,8 @@ except ImportError:
     except ImportError:
         from collections import Counter
 
-    Answer = int
+    if not TYPE_CHECKING:
+        Answer = int
     DEBUGGING = False
 else:
     from test_solution import Answer, Counter
