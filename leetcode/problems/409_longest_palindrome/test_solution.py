@@ -118,13 +118,11 @@ def generate_test_case2() -> TestCase:
     max_length = randint(1, MAX_LENGTH)
     correct_answer = randint(1, max_length)
     remaining_count = correct_answer // 2
-    if remaining_count % 2 == 1:  # is odd
-        remaining_count -= 1
 
     shuffled_letters = list(copy(LETTERS))
     shuffle(shuffled_letters)
     for letter in cycle(shuffled_letters):
-        if not remaining_count:
+        if remaining_count <= 0:
             break
         count = randint(0, remaining_count)
         s.extend(letter * count)
@@ -136,12 +134,15 @@ def generate_test_case2() -> TestCase:
 
     assert (
         len(s) == (correct_answer // 2) * 2
-    ), "generated string incorrectly: {len(s)} =/= {(correct_answer // 2) * 2}"
+    ), f"generated string incorrectly: {len(s)} =/= {(correct_answer // 2) * 2}"
 
     if correct_answer % 2 == 1:
-        unused_letters = list(set(s) - set(LETTERS))
-        num_extra = min(max_length - correct_answer, len(unused_letters))
-        s.extend(unused_letters[:num_extra])
+        unused_letters = list(set(LETTERS) - set(s))
+        if unused_letters:
+            num_extra = min(max_length - correct_answer, len(unused_letters))
+            s.extend(unused_letters[:num_extra])
+        else:
+            correct_answer -= 1
 
     assert len(s) <= max_length, f"added too many letters: {len(s)} > {max_length}"
 
