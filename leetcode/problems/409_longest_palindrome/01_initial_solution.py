@@ -110,26 +110,26 @@ class Solution:
             return counts.total()
 
         # count the number of times an element occurs in the string
-        counts = Counter(s)
+        counts = Counter(sorted(s))
         # initialize a place to keep track of elements which can't be used to
         # make a palindrome through mirroring
-        one_counts: List[str] = []
+        singles: List[str] = []
         for letter, count in counts.items():
             if count % 2 == 1:  # is odd
                 counts[letter] -= 1
-                one_counts.append(letter)
+                singles.append(letter)
             # ensures an int is returned, since all odd counts will first be made even
             counts[letter] //= 2
 
-        assert len(set(one_counts)) == len(
-            one_counts
-        ), f"one_counts not unique:\n{s}\n{one_counts}"
+        assert len(set(singles)) == len(singles), f"singles not unique:\n{s}\n{singles}"
 
         elements = list(counts.elements())
+        elements.sort()
         palindrome = elements[:]
 
-        if one_counts:
-            palindrome.append(one_counts[0])
+        if singles:
+            singles.sort()
+            palindrome.append(singles[-1])
             # all but the last element, reversed
             palindrome.extend(palindrome[-2::-1])
         else:

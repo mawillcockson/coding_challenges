@@ -39,7 +39,7 @@ from itertools import chain, cycle, starmap
 from pathlib import Path
 from pprint import pformat
 from random import choices, randint, randrange, shuffle
-from typing import Callable, List, NamedTuple, Sequence, Tuple, TypeVar
+from typing import TYPE_CHECKING, Callable, List, NamedTuple, Sequence, Tuple, TypeVar
 
 __all__ = [
     "Counter",
@@ -49,23 +49,6 @@ __all__ = [
     "test",
     "make_test_case",
 ]
-
-
-if sys.version_info < (3, 10):
-    # the Counter.total() method was introduced in 3.10
-    from typing import Counter as OriginalCounter
-
-    class Counter(OriginalCounter):
-        "implements .total()"
-        # pylint: disable=abstract-method
-
-        def total(self) -> int:
-            "compute the sum of the counts"
-            return sum(self.values())
-
-
-else:
-    from collections import Counter
 
 
 class EmptyClass:  # pylint: disable=too-few-public-methods
@@ -89,7 +72,7 @@ class TestCase(NamedTuple):
 Function = Callable[[str], Answer]
 
 TEST_CASES: List[Tuple[str, str]] = [
-    ("abccccdd", "dccaccd"),
+    ("abccccdd", "ccdbdcc"),
     ("a", "a"),
     ("bb", "bb"),
     ("abcba", "abcba"),
@@ -101,6 +84,23 @@ MAX_LENGTH = 2_000
 LETTERS = string.ascii_letters
 DEBUGGING = True
 T = TypeVar("T")
+
+
+if TYPE_CHECKING or sys.version_info < (3, 10):
+    # the Counter.total() method was introduced in 3.10
+    from typing import Counter as OriginalCounter
+
+    class Counter(OriginalCounter[T]):
+        "implements .total()"
+        # pylint: disable=abstract-method
+
+        def total(self) -> int:
+            "compute the sum of the counts"
+            return sum(self.values())
+
+
+else:
+    from collections import Counter
 
 
 def disable_debugging() -> None:
@@ -146,42 +146,63 @@ def generate_test_case1() -> TestCase:
 
 def generate_test_case2() -> TestCase:
     "construct a test case by palindrome properties"
-    s: List[str] = []
+    counts: Counter[str] = Counter()
     max_length = randint(1, MAX_LENGTH)
     correct_answer = randint(1, max_length)
-    remaining_count = correct_answer // 2
+    half = correct_answer // 2
+    remaining_count = half
 
-    shuffled_letters = list(copy(LETTERS))
+    shuffled_letters = list(LETTERS)
     shuffle(shuffled_letters)
     for letter in cycle(shuffled_letters):
         if remaining_count <= 0:
             break
         count = randint(0, remaining_count)
-        s.extend(letter * count)
+        if letter in counts:
+            counts[letter] += count
+        else:
+            counts[letter] = count
         remaining_count -= count
 
-    s.extend(reversed(s))
-    if not is_palindrome(s):
-        raise Exception(f"{s} is not a palindrome")
+    assert counts.total() == half, (
+        "generated string incorrectly: " f"total: {counts.total()}, half: {half}"
+    )
 
-    palindrome = "".join(copy(s))
+    extra_space = max_length - correct_answer
+
+    # only add extra letters if the correct_answer is odd, otherwise, any extra
+    # letters could be used to make the palindrome one longer, which would make
+    # it even, and make correct_answer incorrect
+    if correct_answer % 2 == 1 and extra_space > 0:
+        unused_letters = list(set(LETTERS) - set(counts))
+        if unused_letters:
+            num_extra = min(extra_space, len(unused_letters))
+            extra_letters = sorted(unused_letters[:num_extra])
+        else:
+            # there are no spare letters, so add one more of the last letter,
+            # so that it can be used as the center letter in the palindrome
+            extra_letters = [sorted(counts)[-1]]
+    else:
+        extra_letters = []
+
+    palindrome = list(counts.elements())
+    palindrome.sort()
+    second_half = reversed(palindrome)
+    if extra_letters:
+        palindrome.append(extra_letters.pop())
+    palindrome.extend(second_half)
 
     assert (
-        len(s) == (correct_answer // 2) * 2
-    ), f"generated string incorrectly: {len(s)} =/= {(correct_answer // 2) * 2}"
+        len(palindrome) <= max_length
+    ), f"added too many letters: {len(palindrome)} > {max_length}"
 
-    if correct_answer % 2 == 1:
-        unused_letters = list(set(LETTERS) - set(s))
-        if unused_letters:
-            num_extra = min(max_length - len(s), len(unused_letters))
-            s.extend(unused_letters[:num_extra])
-        else:
-            correct_answer -= 1
+    if not is_palindrome(palindrome):
+        raise Exception(f"{palindrome} is not a palindrome")
 
-    assert len(s) <= max_length, f"added too many letters: {len(s)} > {max_length}"
-
+    s = copy(palindrome)
+    s.extend(extra_letters)
     shuffle(s)
-    return TestCase(Parameters(s="".join(s)), correct_answer=palindrome)
+    return TestCase(Parameters(s="".join(s)), correct_answer="".join(palindrome))
 
 
 def test(function: Function) -> None:
