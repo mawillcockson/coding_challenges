@@ -33,12 +33,14 @@ import math
 import string
 import sys
 from argparse import ArgumentParser
+from collections import Counter
+from copy import copy
 from importlib import import_module
 from itertools import chain, starmap
 from pathlib import Path
 from pprint import pformat
-from random import choices, randint, randrange
-from typing import Callable, List, NamedTuple, Tuple
+from random import choices, randint, randrange, shuffle
+from typing import Callable, Counter, List, NamedTuple, Sequence, Tuple, TypeVar
 
 
 class EmptyClass:
@@ -70,6 +72,7 @@ NUM_RANDOM_TESTS = 1_000_000
 MAX_LENGTH = 2_000
 LETTERS = string.ascii_letters
 DEBUGGING = True
+T = TypeVar("T")
 
 
 def make_test_case(
@@ -92,7 +95,7 @@ def generate_test_case(generators: List[Callable[[], TestCase]]) -> TestCase:
 
 
 def generate_test_case1() -> TestCase:
-    "generate a random test case"
+    "mirror a random string"
     # generate a random string, then mirror it
     # this guarantees that if there are any other correct answers, they're all
     # the same length: the length of the string
@@ -103,8 +106,43 @@ def generate_test_case1() -> TestCase:
     else:
         s = s + s[::-1]
 
+    if not is_palindrome(s):
+        raise Exception(f"{s} is not a palindrome")
+
     correct_answer = len(s)
     return TestCase(Parameters(s=s), correct_answer=correct_answer)
+
+
+def generate_test_case2() -> TestCase:
+    "construct a test case by palindrome properties"
+    s: List[str] = []
+    total_length = randint(1, MAX_LENGTH)
+    remaining_count = total_length // 2
+    if remaining_count % 2 == 1:  # is odd
+        remaining_count -= 1
+
+    shuffled_letters = list(copy(LETTERS))
+    shuffle(shuffled_letters)
+    for letter in shuffled_letters:
+        if not remaining_count:
+            break
+        count = randint(0, remaining_count)
+        s.extend(letter * count)
+        remaining_count -= count
+
+    s.extend(reversed(s))
+    if not is_palindrome(s):
+        raise Exception(f"{s} is not a palindrome")
+
+    assert len(s) == total_length - remaining_count, "generated string incorrectly"
+
+    if remaining_count:
+        unused_letters = list(set(s) - set(LETTERS))
+        num_extra = min(remaining_count, len(unused_letters))
+        s.extend(unused_letters[: num_extra + 1])
+
+    shuffle(s)
+    return TestCase(Parameters(s="".join(s)), correct_answer=total_length)
 
 
 def test(function: Function) -> None:
@@ -160,6 +198,22 @@ def test(function: Function) -> None:
 def check(answer: Answer, correct_answer: Answer) -> bool:
     "check if the answer is correct"
     return answer == correct_answer
+
+
+def is_palindrome(sequence: Sequence[T]) -> bool:
+    "determines if sequence is a palindrome"
+    length = len(sequence)
+    if not length:
+        return True
+    if length == 1:
+        return True
+
+    half = length // 2
+    for index in range(half):
+        print(f"{index} v. {length - 1 - index}")
+        if sequence[index] != sequence[length - 1 - index]:
+            return False
+    return True
 
 
 if __name__ == "__main__":
