@@ -27,8 +27,12 @@ Constraints:
 - 1 <= s.length <= 2000
 - s consists of lowercase and/or uppercase English letters only.
 """
-from collections import Counter
 from typing import TYPE_CHECKING
+
+try:
+    from typing import Counter
+except ImportError:
+    from collections import Counter
 
 DEBUGGING = True
 
@@ -39,11 +43,17 @@ except ImportError:
     DEBUGGING = False
 
 
+if TYPE_CHECKING or DEBUGGING:
+    Answer = test_solution.Answer
+else:
+    Answer = int
+
+
 class Solution:
     "required by leetcode"
-    # pylint: disable=too-few-public-methods
+    # pylint: disable=too-few-public-methods,no-self-use
 
-    def longestPalindrome(self, s: str) -> int:
+    def longestPalindrome(self, s: str) -> Answer:
         """
         return the length of the longest palindrome constructible using only
         the characters in s
@@ -89,3 +99,16 @@ class Solution:
         # }
         # Then, the counts of the even ones can be halved and summed, and if
         # there are any 1-count letters, the sum can be incremented.
+        counts = Counter(s)
+        one_counts: Counter[str] = Counter()
+        for letter, count in counts.items():
+            if count % 2 == 1:  # is odd
+                counts[letter] -= 1
+                one_counts[letter] = 1
+                continue
+            # is even
+            counts[letter] //= 2
+
+        if one_counts.total():
+            return counts.total() + 1
+        return counts.total()
