@@ -202,6 +202,7 @@ def check(answer: Answer, correct_answer: Answer) -> bool:
 
 def is_palindrome(sequence: Sequence[T]) -> bool:
     "determines if sequence is a palindrome"
+    # print(repr(sequence))  # debug
     length = len(sequence)
     if not length:
         return True
@@ -210,10 +211,25 @@ def is_palindrome(sequence: Sequence[T]) -> bool:
 
     half = length // 2
     for index in range(half):
-        print(f"{index} v. {length - 1 - index}")
+        # print(f"{sequence[index]} =?= {sequence[length - 1 - index]}")  # debug
         if sequence[index] != sequence[length - 1 - index]:
             return False
     return True
+
+
+def is_palindrome2(sequence: Sequence[T]) -> bool:
+    "determines if sequence is a palindrome"
+    # print(repr(sequence))  # debug
+    length = len(sequence)
+    if length in [0,1]:
+        return True
+
+    half = length // 2
+    if length % 2 == 0:
+        # print(f"{sequence[:half]} =?= {sequence[:half - 1:-1]}")  # debug
+        return sequence[:half] == sequence[:half - 1:-1]
+    # print(f"{sequence[:half]} =?= {sequence[:half:-1]}")  # debug
+    return sequence[:half] == sequence[:half:-1]
 
 
 if __name__ == "__main__":
