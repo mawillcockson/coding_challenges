@@ -35,7 +35,7 @@ import sys
 from argparse import ArgumentParser
 from copy import copy
 from importlib import import_module
-from itertools import chain, starmap
+from itertools import chain, cycle, starmap
 from pathlib import Path
 from pprint import pformat
 from random import choices, randint, randrange, shuffle
@@ -115,14 +115,15 @@ def generate_test_case1() -> TestCase:
 def generate_test_case2() -> TestCase:
     "construct a test case by palindrome properties"
     s: List[str] = []
-    correct_answer = randint(1, MAX_LENGTH)
+    max_length = randint(1, MAX_LENGTH)
+    correct_answer = randint(1, max_length)
     remaining_count = correct_answer // 2
     if remaining_count % 2 == 1:  # is odd
         remaining_count -= 1
 
     shuffled_letters = list(copy(LETTERS))
     shuffle(shuffled_letters)
-    for letter in shuffled_letters:
+    for letter in cycle(shuffled_letters):
         if not remaining_count:
             break
         count = randint(0, remaining_count)
@@ -133,12 +134,16 @@ def generate_test_case2() -> TestCase:
     if not is_palindrome(s):
         raise Exception(f"{s} is not a palindrome")
 
-    assert len(s) == (correct_answer // 2) * 2, f"generated string incorrectly: {len(s)} =/= {(correct_answer // 2) * 2}"
+    assert (
+        len(s) == (correct_answer // 2) * 2
+    ), "generated string incorrectly: {len(s)} =/= {(correct_answer // 2) * 2}"
 
-    if correct_answer % 2 == 1 and remaining_count:
+    if correct_answer % 2 == 1:
         unused_letters = list(set(s) - set(LETTERS))
-        num_extra = min(remaining_count, len(unused_letters))
-        s.extend(unused_letters[: num_extra + 1])
+        num_extra = min(max_length - correct_answer, len(unused_letters))
+        s.extend(unused_letters[:num_extra])
+
+    assert len(s) <= max_length, f"added too many letters: {len(s)} > {max_length}"
 
     shuffle(s)
     return TestCase(Parameters(s="".join(s)), correct_answer=correct_answer)
