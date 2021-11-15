@@ -115,8 +115,8 @@ def generate_test_case1() -> TestCase:
 def generate_test_case2() -> TestCase:
     "construct a test case by palindrome properties"
     s: List[str] = []
-    total_length = randint(1, MAX_LENGTH)
-    remaining_count = total_length // 2
+    correct_answer = randint(1, MAX_LENGTH)
+    remaining_count = correct_answer // 2
     if remaining_count % 2 == 1:  # is odd
         remaining_count -= 1
 
@@ -133,15 +133,15 @@ def generate_test_case2() -> TestCase:
     if not is_palindrome(s):
         raise Exception(f"{s} is not a palindrome")
 
-    assert len(s) == total_length - remaining_count, "generated string incorrectly"
+    assert len(s) == (correct_answer // 2) * 2, f"generated string incorrectly: {len(s)} =/= {(correct_answer // 2) * 2}"
 
-    if remaining_count:
+    if correct_answer % 2 == 1 and remaining_count:
         unused_letters = list(set(s) - set(LETTERS))
         num_extra = min(remaining_count, len(unused_letters))
         s.extend(unused_letters[: num_extra + 1])
 
     shuffle(s)
-    return TestCase(Parameters(s="".join(s)), correct_answer=total_length)
+    return TestCase(Parameters(s="".join(s)), correct_answer=correct_answer)
 
 
 def test(function: Function) -> None:
