@@ -143,7 +143,7 @@ def generate_test_case2() -> TestCase:
     if correct_answer % 2 == 1:
         unused_letters = list(set(LETTERS) - set(s))
         if unused_letters:
-            num_extra = min(max_length - correct_answer, len(unused_letters))
+            num_extra = min(max_length - len(s), len(unused_letters))
             s.extend(unused_letters[:num_extra])
         else:
             correct_answer -= 1
