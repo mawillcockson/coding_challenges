@@ -67,7 +67,7 @@ TEST_CASES: List[Tuple[str, int]] = [
     ("a", 1),
     ("bb", 2),
 ]
-NUM_RANDOM_TESTS = 1_000_000
+NUM_RANDOM_TESTS = 10_000
 MAX_LENGTH = 2_000
 LETTERS = string.ascii_letters
 DEBUGGING = True
@@ -205,7 +205,7 @@ def test(function: Function) -> None:
             # breakpoint()  # pylint: disable=forgotten-debug-statement
             sys.exit(1)
 
-    print(f"passed {passed_count} out of {len(TEST_CASES) + NUM_RANDOM_TESTS}")
+    print(f"passed {passed_count:,} out of {len(TEST_CASES) + NUM_RANDOM_TESTS:,}")
 
 
 def check(answer: Answer, correct_answer: Answer) -> bool:
