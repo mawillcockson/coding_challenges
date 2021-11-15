@@ -186,13 +186,9 @@ def generate_test_case2() -> TestCase:
 
 def test(function: Function) -> None:
     "performs tests on the function to simulate the LeetCode submission"
-    globs = globals()  # type: ignore
     generators: List[Callable[[], TestCase]] = [
-        globs[name]  # type: ignore
-        for name in globs  # type: ignore
-        if name != "generate_test_case"
-        and name.startswith("generate_test_case")
-        and inspect.isfunction(globs[name])  # type: ignore
+        generate_test_case1,
+        generate_test_case2,
     ]
 
     passed_count = 0
