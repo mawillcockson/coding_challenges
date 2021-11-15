@@ -74,6 +74,10 @@ DEBUGGING = True
 T = TypeVar("T")
 
 
+def disable_debugging() -> None:
+    "makes the identifier a global"
+
+
 def make_test_case(
     s: str,
     correct_answer: Answer,
@@ -85,8 +89,8 @@ def make_test_case(
     )
 
 
-def generate_test_case(generators: List[Callable[[], TestCase]]) -> TestCase:
-    "randomly picks a test case generator"
+def pick_random_generator(generators: List[Callable[[], TestCase]]) -> TestCase:
+    "randomly picks a test case generator, and executes it"
     if len(generators) > 1:
         return generators[randrange(len(generators))]()
 
@@ -165,16 +169,17 @@ def test(function: Function) -> None:
     for case_index, test_case in enumerate(
         chain(
             starmap(make_test_case, TEST_CASES),
-            (generate_test_case(generators) for _ in range(NUM_RANDOM_TESTS)),
+            (pick_random_generator(generators) for _ in range(NUM_RANDOM_TESTS)),
         )
     ):
         random_case = case_index + 1 > len(TEST_CASES)
         if not random_case:
             case_number = str(case_index + 1)
             print(f"test #{case_number}")
-        elif DEBUGGING:
-            sys.exit("passed all explicit")
         else:
+            disable_debugging()
+            global DEBUGGING
+            DEBUGGING = False
             case_number = "random"
 
         case = test_case.case
@@ -190,6 +195,9 @@ def test(function: Function) -> None:
             passed_count += 1
 
         if not check(answer, correct_answer):
+            if not DEBUGGING:
+                # run again so debugging statements are prints
+                function(*case)
             print(f"failure for case #{case_number}:")
             print(f"case:\n{pformat(case)}")
             print(f"correct answer:\n{correct_answer}")
@@ -246,5 +254,11 @@ if __name__ == "__main__":
         )
     if len(solution_methods) < 1:
         raise Exception("no solution methods found")
+
+    def turn_off_debugging() -> None:
+        "sets the module's DEBUGGING to False"
+        module.DEBUGGING = False  # type: ignore
+
+    disable_debugging = turn_off_debugging
 
     test(getattr(solution, solution_methods[0]))  # type: ignore
