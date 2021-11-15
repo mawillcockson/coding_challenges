@@ -97,18 +97,15 @@ class Solution:
         #   "a": 1,
         #   "b": 1,
         # }
-        # Then, the counts of the even ones can be halved and summed, and if
+        # Then, the counts of the even ones can be summed, and if
         # there are any 1-count letters, the sum can be incremented.
         counts = Counter(s)
-        one_counts: Counter[str] = Counter()
+        has_one_counts = False
         for letter, count in counts.items():
             if count % 2 == 1:  # is odd
                 counts[letter] -= 1
-                one_counts[letter] = 1
-                continue
-            # is even
-            counts[letter] //= 2
+                has_one_counts = True
 
-        if one_counts.total():
+        if has_one_counts:
             return counts.total() + 1
         return counts.total()
