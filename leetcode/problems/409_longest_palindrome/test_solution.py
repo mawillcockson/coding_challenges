@@ -41,6 +41,32 @@ from pprint import pformat
 from random import choices, randint, randrange, shuffle
 from typing import Callable, List, NamedTuple, Sequence, Tuple, TypeVar
 
+__all__ = [
+    "Counter",
+    "Answer",
+    "TestCase",
+    "Parameters",
+    "test",
+    "make_test_case",
+]
+
+
+if sys.version_info < (3, 10):
+    # the Counter.total() method was introduced in 3.10
+    from typing import Counter as OriginalCounter
+
+    class Counter(OriginalCounter):
+        "implements .total()"
+        # pylint: disable=abstract-method
+
+        def total(self) -> int:
+            "compute the sum of the counts"
+            return sum(self.values())
+
+
+else:
+    from collections import Counter
+
 
 class EmptyClass:  # pylint: disable=too-few-public-methods
     "empty class for attribute comparison"
@@ -51,7 +77,7 @@ class Parameters(NamedTuple):
     s: str
 
 
-Answer = int
+Answer = str
 
 
 class TestCase(NamedTuple):
@@ -62,10 +88,13 @@ class TestCase(NamedTuple):
 
 Function = Callable[[str], Answer]
 
-TEST_CASES: List[Tuple[str, int]] = [
-    ("abccccdd", 7),
-    ("a", 1),
-    ("bb", 2),
+TEST_CASES: List[Tuple[str, str]] = [
+    ("abccccdd", "dccaccd"),
+    ("a", "a"),
+    ("bb", "bb"),
+    ("abcba", "abcba"),
+    ("abba", "abba"),
+    ("aba", "aba"),
 ]
 NUM_RANDOM_TESTS = 10_000
 MAX_LENGTH = 2_000
@@ -112,8 +141,7 @@ def generate_test_case1() -> TestCase:
     if not is_palindrome(s):
         raise Exception(f"{s} is not a palindrome")
 
-    correct_answer = len(s)
-    return TestCase(Parameters(s=s), correct_answer=correct_answer)
+    return TestCase(Parameters(s=s), correct_answer=s)
 
 
 def generate_test_case2() -> TestCase:
@@ -136,6 +164,8 @@ def generate_test_case2() -> TestCase:
     if not is_palindrome(s):
         raise Exception(f"{s} is not a palindrome")
 
+    palindrome = "".join(copy(s))
+
     assert (
         len(s) == (correct_answer // 2) * 2
     ), f"generated string incorrectly: {len(s)} =/= {(correct_answer // 2) * 2}"
@@ -151,7 +181,7 @@ def generate_test_case2() -> TestCase:
     assert len(s) <= max_length, f"added too many letters: {len(s)} > {max_length}"
 
     shuffle(s)
-    return TestCase(Parameters(s="".join(s)), correct_answer=correct_answer)
+    return TestCase(Parameters(s="".join(s)), correct_answer=palindrome)
 
 
 def test(function: Function) -> None:
@@ -178,7 +208,7 @@ def test(function: Function) -> None:
             print(f"test #{case_number}")
         else:
             disable_debugging()
-            global DEBUGGING
+            global DEBUGGING  # pylint: disable=global-statement
             DEBUGGING = False
             case_number = "random"
 
@@ -210,7 +240,7 @@ def test(function: Function) -> None:
 
 def check(answer: Answer, correct_answer: Answer) -> bool:
     "check if the answer is correct"
-    return answer == correct_answer
+    return is_palindrome(answer) and Counter(answer) == Counter(correct_answer)
 
 
 def is_palindrome(sequence: Sequence[T]) -> bool:

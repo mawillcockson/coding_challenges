@@ -27,12 +27,7 @@ Constraints:
 - 1 <= s.length <= 2000
 - s consists of lowercase and/or uppercase English letters only.
 """
-from typing import TYPE_CHECKING
-
-try:
-    from typing import Counter
-except ImportError:
-    from collections import Counter
+from typing import TYPE_CHECKING, List
 
 DEBUGGING = True
 
@@ -40,13 +35,15 @@ try:
     # pylint: disable=unused-import
     import test_solution
 except ImportError:
-    DEBUGGING = False
+    try:
+        from typing import Counter
+    except ImportError:
+        from collections import Counter
 
-
-if TYPE_CHECKING or DEBUGGING:
-    Answer = test_solution.Answer
-else:
     Answer = int
+    DEBUGGING = False
+else:
+    from test_solution import Answer, Counter
 
 
 class Solution:
@@ -99,13 +96,42 @@ class Solution:
         # }
         # Then, the counts of the even ones can be summed, and if
         # there are any 1-count letters, the sum can be incremented.
+        if not TYPE_CHECKING and Answer is int:
+            counts = Counter(s)
+            has_one_counts = False
+            for letter, count in counts.items():
+                if count % 2 == 1:  # is odd
+                    counts[letter] -= 1
+                    has_one_counts = True
+
+            if has_one_counts:
+                return counts.total() + 1
+            return counts.total()
+
+        # count the number of times an element occurs in the string
         counts = Counter(s)
-        has_one_counts = False
+        # initialize a place to keep track of elements which can't be used to
+        # make a palindrome through mirroring
+        one_counts: List[str] = []
         for letter, count in counts.items():
             if count % 2 == 1:  # is odd
                 counts[letter] -= 1
-                has_one_counts = True
+                one_counts.append(letter)
+            # ensures an int is returned, since all odd counts will first be made even
+            counts[letter] //= 2
 
-        if has_one_counts:
-            return counts.total() + 1
-        return counts.total()
+        assert len(set(one_counts)) == len(
+            one_counts
+        ), f"one_counts not unique:\n{s}\n{one_counts}"
+
+        elements = list(counts.elements())
+        palindrome = elements[:]
+
+        if one_counts:
+            palindrome.append(one_counts[0])
+            # all but the last element, reversed
+            palindrome.extend(palindrome[-2::-1])
+        else:
+            palindrome.extend(reversed(palindrome))
+
+        return "".join(palindrome)
