@@ -49,6 +49,20 @@ def preparation_time_in_minutes(number_of_layers: int) -> int:
 
 
 
-#TODO: define the 'elapsed_time_in_minutes()' function below.
+#DONE: define the 'elapsed_time_in_minutes()' function below.
 # Remember to add a docstring (you can copy and then alter the one from bake_time_remaining.)
-def elapsed_time_in_minutes(): pass
+def elapsed_time_in_minutes(number_of_layers: int, elapsed_bake_time: int) -> int:
+    """Calculate the total time spent on the lasagna
+
+    :param number_of_layers: int - number of layers in prepared lasagna
+    :param elapsed_bake_time: int - the amount of time the lasagna has been cooking
+    :return: int - the number of minutes spend on the lasagna
+
+    Function that takes the number of layers that were in the lasagna that was
+    put into the oven, as well as the amount of time in minutes that it's spent
+    baking so far, and returns the total amount of time that has gone into the
+    lasagna so far
+    """
+    if elapsed_bake_time < 0:
+        raise ValueError(f"elapsed_bake_time must be positive: {elapsed_bake_time}")
+    return preparation_time_in_minutes(number_of_layers) + elapsed_bake_time
