@@ -10,7 +10,11 @@ pub fn main() void {
 
     // Please use an if...else expression to set "price".
     // If discount is true, the price should be $17, otherwise $20:
-    const price: u8 = if ???;
+    const price: u8 = if (discount) block: {
+        break :block 17;
+    } else block: {
+        break :block 30;
+    };
 
     std.debug.print("With the discount, the price is ${}.\n", .{price});
 }
