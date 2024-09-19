@@ -4,10 +4,11 @@
 //
 const std = @import("std");
 
-pub fn main() void {
+pub fn main() !void {
     const animals = [_]u8{ 'g', 'c', 'd', 'd', 'g', 'z' };
 
     for (animals) |a| printAnimal(a);
+    //for (animals) |a| try betterPrintAnimal(a);
 
     std.debug.print("done.\n", .{});
 }
@@ -18,7 +19,7 @@ pub fn main() void {
 fn printAnimal(animal: u8) void {
     std.debug.print("(", .{});
 
-    std.debug.print(") ", .{}); // <---- how?!
+    defer std.debug.print(") ", .{}); // <---- how?!
 
     if (animal == 'g') {
         std.debug.print("Goat", .{});
@@ -34,4 +35,13 @@ fn printAnimal(animal: u8) void {
     }
 
     std.debug.print("Unknown", .{});
+}
+
+fn betterPrintAnimal(animal: u8) !void {
+    try std.io.getStdOut().writer().print("({s})\n", .{switch (animal) {
+        'g' => "Goat",
+        'c' => "Cat",
+        'd' => "Dog",
+        else => "Unknown",
+    }});
 }

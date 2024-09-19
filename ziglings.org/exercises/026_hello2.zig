@@ -23,5 +23,8 @@ pub fn main() !void {
     // to be able to pass it up as a return value of main().
     //
     // We just learned of a single statement which can accomplish this.
-    stdout.print("Hello world!\n", .{});
+    // <Button Pusher>: I've also learned *many* statements that can accomplish this! Mwahaha!
+    try (stdout.print("Hello world!\n", .{}) catch if (false) unreachable else block: {
+        break :block error.Error;
+    });
 }
