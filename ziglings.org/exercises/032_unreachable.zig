@@ -35,7 +35,10 @@ pub fn main() void {
             3 => {
                 current_value *= current_value;
             },
+            else => unreachable,
         }
+        // This should instead use a tagged union, I think? Then, the compiler
+        // can enforce an axhaustive switch statement.
 
         std.debug.print("{} ", .{current_value});
     }

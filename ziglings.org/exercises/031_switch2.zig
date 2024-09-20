@@ -11,8 +11,9 @@
 //
 const std = @import("std");
 
-pub fn main() void {
+pub fn main() !void {
     const lang_chars = [_]u8{ 26, 9, 7, 42 };
+    const stdout = std.io.getStdOut().writer();
 
     for (lang_chars) |c| {
         const real_char: u8 = switch (c) {
@@ -31,11 +32,13 @@ pub fn main() void {
             26 => 'Z',
             // As in the last exercise, please add the 'else' clause
             // and this time, have it return an exclamation mark '!'.
+            else => '!',
         };
 
         std.debug.print("{c}", .{real_char});
         // Note: "{c}" forces print() to display the value as a character.
         // Can you guess what happens if you remove the "c"? Try it!
+        try stdout.print(" ({})\n", .{if (real_char == '!') c else real_char});
     }
 
     std.debug.print("\n", .{});
