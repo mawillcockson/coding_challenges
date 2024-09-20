@@ -9,10 +9,17 @@ const std = @import("std");
 
 const NumError = error{IllegalNumber};
 
-pub fn main() void {
+pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
 
-    const my_num: u32 = getNumber();
+    const my_num: u32 = getNumber() catch |err| switch (err) {
+        NumError.IllegalNumber => 42,
+        // Is it useful at all to do this? I'm hoping this is very explicit
+        // about stating this will only ever expect to handle one error type,
+        // and other error types should be a compile-time error, indicating
+        // this statement needs to be updated.
+        else => unreachable,
+    };
 
     try stdout.print("my_num={}\n", .{my_num});
 }
