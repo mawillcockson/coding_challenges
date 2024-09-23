@@ -26,9 +26,9 @@ pub fn main() void {
     makeFive(&more_nums[2]);
 
     // And print the array:
-    std.debug.print("more_nums: ", .{});
+    std.debug.print("more_nums:", .{});
     for (more_nums) |n| {
-        std.debug.print("{} ", .{n});
+        std.debug.print(" {}", .{n});
     }
 
     std.debug.print("\n", .{});
