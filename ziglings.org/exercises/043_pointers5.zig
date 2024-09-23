@@ -42,6 +42,7 @@ const Class = enum {
 };
 
 const Character = struct {
+    name: []const u8,
     class: Class,
     gold: u32,
     health: u8 = 100, // You can provide default values
@@ -54,12 +55,14 @@ const Character = struct {
 
 pub fn main() void {
     var mighty_krodor = Character{
+        .name = "The Mighty Krodor",
         .class = Class.wizard,
         .gold = 10000,
         .experience = 2340,
     };
 
     var glorp = Character{ // Glorp!
+        .name = "Glorp the Wise",
         .class = Class.wizard,
         .gold = 10,
         .experience = 20,
