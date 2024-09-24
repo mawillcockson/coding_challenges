@@ -27,6 +27,11 @@ const Elephant = struct {
         const v: u8 = if (self.visited) 'v' else ' ';
         std.debug.print("{u}{u} ", .{ self.letter, v });
     }
+
+    pub fn grab(self: *Elephant, elephant: *Elephant) *Elephant {
+        elephant.tail = self;
+        return elephant;
+    }
 };
 
 pub fn main() void {
@@ -35,8 +40,7 @@ pub fn main() void {
     var elephantC = Elephant{ .letter = 'C' };
 
     // This links the elephants so that each tail "points" to the next.
-    elephantA.tail = &elephantB;
-    elephantB.tail = &elephantC;
+    _ = elephantC.grab(&elephantB).grab(&elephantA);
 
     visitElephants(&elephantA);
 
@@ -54,7 +58,7 @@ fn visitElephants(first_elephant: *Elephant) void {
 
         // This gets the next elephant or stops:
         // which method do we want here?
-        e = if (e.hasTail()) e.??? else break;
+        e = if (e.hasTail()) e.getTail() else break;
     }
 }
 

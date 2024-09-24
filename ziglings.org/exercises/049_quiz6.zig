@@ -27,7 +27,27 @@ const Elephant = struct {
     // Your Elephant trunk methods go here!
     // ---------------------------------------------------
 
-    ???
+    pub fn getTrunk(self: *Elephant) !*Elephant {
+        if (self.trunk) |elephant| {
+            return elephant;
+        } else {
+            return error.MissingTrunkMate;
+        }
+    }
+
+    pub fn hasTrunk(self: *Elephant) bool {
+        return (self.trunk != null);
+    }
+
+    pub fn grab(self: *Elephant, elephant: ?*Elephant) *Elephant {
+        if (elephant == null) {
+            self.trunk = null;
+            return self;
+        }
+        self.trunk = elephant;
+        elephant.?.*.tail = self;
+        return elephant.?;
+    }
 
     // ---------------------------------------------------
 
@@ -48,12 +68,14 @@ pub fn main() void {
     var elephantC = Elephant{ .letter = 'C' };
 
     // We link the elephants so that each tail "points" to the next.
-    elephantA.tail = &elephantB;
-    elephantB.tail = &elephantC;
+    //elephantA.tail = &elephantB;
+    //elephantB.tail = &elephantC;
 
     // And link the elephants so that each trunk "points" to the previous.
-    elephantB.trunk = &elephantA;
-    elephantC.trunk = &elephantB;
+    //elephantB.trunk = &elephantA;
+    //elephantC.trunk = &elephantB;
+
+    _ = elephantC.grab(&elephantB).grab(&elephantA);
 
     visitElephants(&elephantA);
 
@@ -82,10 +104,6 @@ fn visitElephants(first_elephant: *Elephant) void {
         e.print();
 
         // This gets the previous elephant or stops.
-        if (e.hasTrunk()) {
-            e = e.getTrunk();
-        } else {
-            break;
-        }
+        e = e.getTrunk() catch break;
     }
 }

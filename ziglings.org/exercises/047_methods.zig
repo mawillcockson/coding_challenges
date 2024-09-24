@@ -56,13 +56,20 @@ const Alien = struct {
     }
 };
 
+fn min(comptime T: type, a: T, b: T) T {
+    if (a <= b) {
+        return a;
+    }
+    return b;
+}
+
 // Your trusty weapon. Zap those aliens!
 const HeatRay = struct {
     damage: u8,
 
     // We love this method:
     pub fn zap(self: HeatRay, alien: *Alien) void {
-        alien.health -= if (self.damage >= alien.health) alien.health else self.damage;
+        alien.health -= min(u8, alien.health, self.damage);
     }
 };
 
@@ -88,7 +95,7 @@ pub fn main() void {
         for (&aliens) |*alien| {
 
             // *** Zap the alien with the heat ray here! ***
-            ???.zap(???);
+            heat_ray.zap(alien);
 
             // If the alien's health is still above 0, it's still alive.
             if (alien.health > 0) aliens_alive += 1;
