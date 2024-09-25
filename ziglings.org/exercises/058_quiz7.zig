@@ -306,10 +306,43 @@ const HermitsNotebook = struct {
     // suppose could happen if we allocated the array in this
     // function's stack frame (the space allocated for a function's
     // "local" data) and returned a pointer or slice to it?
+    // Answer: The pointer would probably point to deallocated memory?
+    //
+    // Testing this was interesting:
+    //
+    // const std = @import("std");
+    //
+    // pub fn main() !void {
+    //     const stdout = std.io.getStdOut().writer();
+    //
+    //     var arr = [_]u8{ 0, 1, 2, 3 };
+    //
+    //     const answer: []u8 = makeAnswer(&arr);
+    //
+    //     try stdout.print("{{", .{});
+    //     defer (stdout.print("}}\n", .{}) catch {});
+    //     for (answer) |i| {
+    //         try stdout.print("{d}, ", .{i});
+    //     }
+    // }
+    //
+    // fn makeAnswer(a: []u8) []u8 {
+    //     _ = a;
+    //     var b = [_]u8{ 0, 1, 2, 3 };
+    //     var c: []u8 = b[0..];
+    //     c[0] = 3;
+    //     return c;
+    // }
+    //
+    // Running this with `zig run temp.zig` would result in the expected
+    // output. I guess because the memory wasn't actually deallocated, maybe?
+    // But running with `zig run -O ReleaseFast temp.zig` did result in
+    // `{00, 00, 00, 00, }`, which makes sense, but it's probably more due to a
+    // compiler optimization of some sort, right?
     //
     // Looks like the hermit forgot something in the return value of
     // this function. What could that be?
-    fn getTripTo(self: *HermitsNotebook, trip: []?TripItem, dest: *Place) void {
+    fn getTripTo(self: *HermitsNotebook, trip: []?TripItem, dest: *Place) TripError!void {
         // We start at the destination entry.
         const destination_entry = self.getEntry(dest);
 
