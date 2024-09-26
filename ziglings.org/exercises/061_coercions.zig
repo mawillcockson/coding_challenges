@@ -61,13 +61,14 @@
 // The last three are fairly esoteric, but you're more than
 // welcome to read more about them in the official Zig language
 // documentation and write your own experiments.
+I will!
 
 const print = @import("std").debug.print;
 
 pub fn main() void {
     var letter: u8 = 'A';
 
-    const my_letter:   ???   = &letter;
+    const my_letter: ?*[1]u8 = &letter;
     //               ^^^^^^^
     //           Your type here.
     // Must coerce from &letter (which is a *u8).
