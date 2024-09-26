@@ -40,10 +40,15 @@ const print = @import("std").debug.print;
 pub fn main() void {
     // The approximate weight of the Space Shuttle upon liftoff
     // (including boosters and fuel tank) was 4,480,000 lb.
+    // confirming source: https://coolcosmos.ipac.caltech.edu/ask/268-How-much-did-the-Space-Shuttle-weigh-
     //
     // We'll convert this weight from pound to kilograms at a
     // conversion of 0.453592kg to the pound.
-    const shuttle_weight: f16 = 0.453592 * 4480e6;
+    // The constant used here was `4480e6`, which is 4.4 Billion.
+    // With the correct value, the result of the calculation is ~2 million,
+    // which is still higher than the maximum value a binary16 float can
+    // represent (65504).
+    const shuttle_weight: f32 = 0.453592 * 4480e3;
 
     // By default, float values are formatted in scientific
     // notation. Try experimenting with '{d}' and '{d:.3}' to see
