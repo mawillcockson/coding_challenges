@@ -61,7 +61,6 @@
 // The last three are fairly esoteric, but you're more than
 // welcome to read more about them in the official Zig language
 // documentation and write your own experiments.
-I will!
 
 const print = @import("std").debug.print;
 
@@ -76,4 +75,20 @@ pub fn main() void {
 
     // When it's right, this will work:
     print("Letter: {u}\n", .{my_letter.?.*[0]});
+
+    const E = enum { a };
+    const Rule9 = union(E) { a: bool };
+    const r1: E = Rule9{ .a = true };
+    _ = r1;
+
+    const Rule10 = union(E) {
+        a: void,
+    };
+    const r2: Rule10 = E.a;
+    _ = r2;
+
+    // I might be missing something...
+    //const rule11: void = {};
+    //const r3: *void = rule11;
+    //_ = r3;
 }
