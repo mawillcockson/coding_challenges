@@ -57,6 +57,13 @@ const print = @import("std").debug.print;
 const ingredients = 4;
 const foods = 4;
 
+const Ingredient = enum {
+    Chili,
+    Macaroni,
+    Tomato_Sauce,
+    Cheese,
+};
+
 const Food = struct {
     name: []const u8,
     requires: [ingredients]bool,
