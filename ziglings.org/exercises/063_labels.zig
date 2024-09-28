@@ -50,7 +50,8 @@
 //         continue :my_while;
 //     }
 //
-const print = @import("std").debug.print;
+const std = @import("std");
+const print = std.debug.print;
 
 const Ingredient = enum {
     Chili,
@@ -59,9 +60,11 @@ const Ingredient = enum {
     Cheese,
 };
 
+const IngredientSet = std.enums.EnumSet(Ingredient);
+
 const Food = struct {
     name: []const u8,
-    requires: []const Ingredient,
+    requires: IngredientSet,
 };
 
 //                 Chili  Macaroni  Tomato Sauce  Cheese
@@ -75,19 +78,19 @@ const Food = struct {
 const menu = [_]Food{
     Food{
         .name = "Mac & Cheese",
-        .requires = &[_]Ingredient{ .Macaroni, .Cheese },
+        .requires = IngredientSet.initMany(&[_]Ingredient{ .Macaroni, .Cheese }),
     },
     Food{
         .name = "Chili Mac",
-        .requires = &[_]Ingredient{ .Chili, .Macaroni },
+        .requires = IngredientSet.initMany(&[_]Ingredient{ .Chili, .Macaroni }),
     },
     Food{
         .name = "Pasta",
-        .requires = &[_]Ingredient{ .Macaroni, .Tomato_Sauce },
+        .requires = IngredientSet.initMany(&[_]Ingredient{ .Macaroni, .Tomato_Sauce }),
     },
     Food{
         .name = "Cheesy Chili",
-        .requires = &[_]Ingredient{ .Chili, .Cheese },
+        .requires = IngredientSet.initMany(&[_]Ingredient{ .Chili, .Cheese }),
     },
 };
 
@@ -102,31 +105,20 @@ pub fn main() void {
     // numbers (based on array position) will be fine for our
     // tiny example, but it would be downright criminal in a real
     // application!
-    const wanted_ingredients = [_]Ingredient{ .Chili, .Cheese }; // Chili, Cheese
+    const wanted_ingredients = IngredientSet.initMany(&[_]Ingredient{
+        .Chili,
+        .Cheese,
+    });
 
-    // Look at each Food on the menu...
     const meal: Food = food_loop: for (menu) |food| {
-
-        // Now look at each required ingredient for the Food...
-        ingredient_loop: for (food.requires) |required| {
-            // See if the customer wanted this ingredient.
-            for (wanted_ingredients) |want_it| {
-                if (required == want_it) continue :ingredient_loop;
-            } else {
-                // We did not find this required ingredient, so we
-                // can't make this Food. Continue the outer loop.
-                continue :food_loop;
-            }
+        // Look at each Food on the menu and if the food contains the wanted
+        // ingredients, return it
+        if (food.requires.supersetOf(wanted_ingredients)) {
+            break :food_loop food;
         }
-
-        // If we get this far, the required ingredients were all
-        // wanted for this Food.
-        //
-        // Please return this Food from the loop.
-        break food;
     } else menu[0];
-    // ^ Oops! We forgot to return Mac & Cheese as the default
-    // Food when the requested ingredients aren't found.
+    // Return Mac & Cheese as the default Food when the requested ingredients
+    // aren't found.
 
     print("Enjoy your {s}!\n", .{meal.name});
 }
