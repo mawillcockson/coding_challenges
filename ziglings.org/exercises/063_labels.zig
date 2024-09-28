@@ -108,15 +108,15 @@ pub fn main() void {
     const meal: Food = food_loop: for (menu) |food| {
 
         // Now look at each required ingredient for the Food...
-        for (food.requires) |required| {
+        ingredient_loop: for (food.requires) |required| {
             // See if the customer wanted this ingredient.
-            const found = for (wanted_ingredients) |want_it| {
-                if (required == want_it) break true;
-            } else false;
-
-            // We did not find this required ingredient, so we
-            // can't make this Food. Continue the outer loop.
-            if (!found) continue :food_loop;
+            for (wanted_ingredients) |want_it| {
+                if (required == want_it) continue :ingredient_loop;
+            } else {
+                // We did not find this required ingredient, so we
+                // can't make this Food. Continue the outer loop.
+                continue :food_loop;
+            }
         }
 
         // If we get this far, the required ingredients were all
