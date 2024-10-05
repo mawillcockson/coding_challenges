@@ -35,10 +35,14 @@ pub fn main() void {
     // at compile time.
     //
     // Please fix this to loop once per "instruction":
-    ??? (i < instructions.len) : (???) {
+    inline while (i < instructions.len) : (i += 3) {
 
         // This gets the digit from the "instruction". Can you
         // figure out why we subtract '0' from it?
+        // Answer: since each number is encoded in text as a byte, with the
+        // value order mirroring lexicographical order, the lowest-value byte
+        // can be subtracted as an offset, to obtain the denotational value of
+        // all bytes.
         const digit = instructions[i + 1] - '0';
 
         // This 'switch' statement contains the actual work done
