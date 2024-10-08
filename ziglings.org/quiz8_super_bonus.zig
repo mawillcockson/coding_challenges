@@ -78,6 +78,8 @@ fn parsePath(comptime path: []const u8) [connections(path)]Path {
         }
         //const close_brace_index = std.mem.indexOfScalarPos(u8, path, index + 1, ']') orelse @compileError("missing closing square bracket in destination #" ++ std.fmt.digitToChar(paths_index, .lower) ++ " '" ++ path ++ "'");
         //const fields = @typeInfo(Place).@"struct".fields;
+        // This assumes that the distance is represented by a single character
+        // encoding a value in base 10
         const dist = std.fmt.charToDigit(path[index + 2], 10) catch @compileError("cannot read a distance in path '" ++ path ++ "'");
         paths[paths_index] = makePath(from, to, dist);
         paths_index += 1;
