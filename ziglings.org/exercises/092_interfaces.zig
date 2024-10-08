@@ -56,16 +56,16 @@ const std = @import("std");
 const Ant = struct {
     still_alive: bool,
 
-    pub fn print(self: Ant) void {
-        std.debug.print("Ant is {s}.\n", .{if (self.still_alive) "alive" else "dead"});
+    pub fn print(self: @This()) void {
+        std.debug.print("{s} is {s}.\n", .{ stripFname(@TypeOf(self)), if (self.still_alive) "alive" else "dead" });
     }
 };
 
 const Bee = struct {
     flowers_visited: u16,
 
-    pub fn print(self: Bee) void {
-        std.debug.print("Bee visited {} flowers.\n", .{self.flowers_visited});
+    pub fn print(self: @This()) void {
+        std.debug.print("{s} visited {} flowers.\n", .{ stripFname(@TypeOf(self)), self.flowers_visited });
     }
 };
 
@@ -74,10 +74,30 @@ const Bee = struct {
 const Grasshopper = struct {
     distance_hopped: u16,
 
-    pub fn print(self: Grasshopper) void {
-        std.debug.print("Grasshopper hopped {} meters.\n", .{self.distance_hopped});
+    pub fn print(self: @This()) void {
+        std.debug.print("{s} hopped {} meters.\n", .{ stripFname(@TypeOf(self)), self.distance_hopped });
     }
 };
+
+fn stripFname(comptime mytype: type) []const u8 {
+    const type_name = @typeName(mytype);
+    const file_suffix = ".zig";
+    const prefix = comptime block: {
+        const file = @src().file;
+        if (!std.mem.endsWith(u8, file, file_suffix)) {
+            @compileError("source file does not end in .zig -> " ++ file);
+        }
+        const pref = file[0..(file.len - file_suffix.len)];
+        if (!std.mem.startsWith(u8, type_name, pref)) {
+            @compileError("type name does not start with filename -> " ++ type_name);
+        }
+        break :block pref;
+    };
+    // To account for both the added '.' and the fact that the slice starts at
+    // the range's start, and we want to start after the last character of the
+    // prefix followed by the added '.'
+    return type_name[(prefix.len + 1)..];
+}
 
 const Insect = union(enum) {
     ant: Ant,
@@ -88,7 +108,7 @@ const Insect = union(enum) {
     // being an interface method. Any member of this union with
     // a print() method can be treated uniformly by outside
     // code without needing to know any other details. Cool!
-    pub fn print(self: Insect) void {
+    pub fn print(self: @This()) void {
         switch (self) {
             inline else => |case| return case.print(),
         }
@@ -106,7 +126,7 @@ pub fn main() !void {
     for (my_insects) |insect| {
         // Almost done! We want to print() each insect with a
         // single method call here.
-        ???
+        insect.print();
     }
 }
 
