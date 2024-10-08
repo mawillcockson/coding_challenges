@@ -7,7 +7,8 @@
 // explanatory comments. And we're only going to change one part
 // of it.
 //
-const print = @import("std").debug.print;
+const std = @import("std");
+const print = std.debug.print;
 
 const TripError = error{ Unreachable, EatenByAGrue };
 
@@ -56,14 +57,52 @@ fn makePath(from: *Place, to: *Place, dist: u8) Path {
     };
 }
 
+fn connections(comptime path: []const u8) usize {
+    const openParenIndex = std.mem.indexOfScalar(u8, path, '(') orelse @compileError("no opening parenthesis in path '" ++ path ++ "'");
+    const closeParenIndex = if (path[path.len - 1] == ')') path.len - 1 else @compileError("no closing parenthesis in path '" ++ path ++ "'");
+    const count: usize = std.mem.count(u8, path[(openParenIndex + 1)..(closeParenIndex)], " ");
+    return count + 1;
+}
+
+fn parsePath(comptime path: []const u8) [connections(path)]Path {
+    const from: *Place = &@field(@This(), &[_]u8{path[0]});
+    var paths: [connections(path)]Path = undefined;
+    var paths_index: u8 = 0;
+    // Safe to use unconditional null unwrap as connections() already checked
+    // for the existence of the same '(' char
+    var index = std.mem.indexOfScalar(u8, path, '(').? + 1;
+    inline while (index < path.len) {
+        const to: *Place = &@field(@This(), &[_]u8{path[index]});
+        if (path[index + 1] != '[') {
+            @compileError("missing open brace in path '" ++ path ++ "'");
+        }
+        //const close_brace_index = std.mem.indexOfScalarPos(u8, path, index + 1, ']') orelse @compileError("missing closing square bracket in destination #" ++ std.fmt.digitToChar(paths_index, .lower) ++ " '" ++ path ++ "'");
+        //const fields = @typeInfo(Place).@"struct".fields;
+        const dist = std.fmt.charToDigit(path[index + 2], 10) catch @compileError("cannot read a distance in path '" ++ path ++ "'");
+        paths[paths_index] = makePath(from, to, dist);
+        paths_index += 1;
+
+        index = std.mem.indexOfScalarPos(u8, path, index, ' ') orelse break;
+        index += 1;
+    }
+    if (paths_index < (connections(path) - 1)) @compileError("something wrong with path '" ++ path ++ "'");
+    return paths;
+}
+
 // Using our new function, these path definitions take up considerably less
 // space in our program now!
-const a_paths = [_]Path{makePath(&a, &b, 2)};
-const b_paths = [_]Path{ makePath(&b, &a, 2), makePath(&b, &d, 1) };
-const c_paths = [_]Path{ makePath(&c, &d, 3), makePath(&c, &e, 2) };
-const d_paths = [_]Path{ makePath(&d, &b, 1), makePath(&d, &c, 3), makePath(&d, &f, 7) };
-const e_paths = [_]Path{ makePath(&e, &c, 2), makePath(&e, &f, 1) };
-const f_paths = [_]Path{makePath(&f, &d, 7)};
+//const a_paths = [_]Path{makePath(&a, &b, 2)};
+const a_paths = parsePath("a -> (b[2])");
+//const b_paths = [_]Path{ makePath(&b, &a, 2), makePath(&b, &d, 1) };
+const b_paths = parsePath("b -> (a[2] d[1])");
+//const c_paths = [_]Path{ makePath(&c, &d, 3), makePath(&c, &e, 2) };
+const c_paths = parsePath("c -> (d[3] e[2])");
+//const d_paths = [_]Path{ makePath(&d, &b, 1), makePath(&d, &c, 3), makePath(&d, &f, 7) };
+const d_paths = parsePath("d -> (b[1] c[3] f[7])");
+//const e_paths = [_]Path{ makePath(&e, &c, 2), makePath(&e, &f, 1) };
+const e_paths = parsePath("e -> (c[2] f[1])");
+//const f_paths = [_]Path{makePath(&f, &d, 7)};
+const f_paths = parsePath("f -> (d[7])");
 //
 // But is it more readable? That could be argued either way.
 //
