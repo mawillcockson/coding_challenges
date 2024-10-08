@@ -41,7 +41,7 @@
 const print = @import("std").debug.print;
 const sentinel = @import("std").meta.sentinel;
 
-pub fn main() void {
+pub fn main() !void {
     // Here's a zero-terminated array of u32 values:
     var nums = [_:0]u32{ 1, 2, 3, 4, 5, 6 };
 
@@ -62,8 +62,8 @@ pub fn main() void {
     // (It turns out that the array prints completely, including
     // the sentinel 0 in the middle. The many-item pointer stops
     // at the first sentinel value.)
-    printSequence(nums);
-    printSequence(ptr);
+    try printSequence(nums);
+    try printSequence(ptr);
 
     print("\n", .{});
 }
@@ -71,7 +71,7 @@ pub fn main() void {
 // Here's our generic sequence printing function. It's nearly
 // complete, but there are a couple of missing bits. Please fix
 // them!
-fn printSequence(my_seq: anytype) void {
+fn printSequence(my_seq: anytype) error{UnsupportedType}!void {
     const my_typeinfo = @typeInfo(@TypeOf(my_seq));
 
     // The TypeInfo contained in my_typeinfo is a union. We use
@@ -82,7 +82,7 @@ fn printSequence(my_seq: anytype) void {
             print("Array:", .{});
 
             // Loop through the items in my_seq.
-            for (???) |s| {
+            for (my_seq) |s| {
                 print("{}", .{s});
             }
         },
@@ -94,12 +94,11 @@ fn printSequence(my_seq: anytype) void {
             // Loop through the items in my_seq until we hit the
             // sentinel value.
             var i: usize = 0;
-            while (??? != my_sentinel) {
+            while (my_seq[i] != my_sentinel) : (i += 1) {
                 print("{}", .{my_seq[i]});
-                i += 1;
             }
         },
-        else => unreachable,
+        else => error.UnsupportedType,
     }
     print(". ", .{});
 }

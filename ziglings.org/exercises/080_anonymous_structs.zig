@@ -26,7 +26,8 @@
 // You can also have completely anonymous structs. The value
 // of @typeName(struct {}) is "struct:<position in source>".
 //
-const print = @import("std").debug.print;
+const std = @import("std");
+const print = std.debug.print;
 
 // This function creates a generic data structure by returning an
 // anonymous struct type (which will no longer be anonymous AFTER
@@ -48,13 +49,13 @@ pub fn main() void {
     // * circle1 should hold i32 integers
     // * circle2 should hold f32 floats
     //
-    const circle1 = ??? {
+    const circle1 = Circle(i32){
         .center_x = 25,
         .center_y = 70,
         .radius = 15,
     };
 
-    const circle2 = ??? {
+    const circle2 = Circle(f32){
         .center_x = 25.234,
         .center_y = 70.999,
         .radius = 15.714,
@@ -79,7 +80,23 @@ pub fn main() void {
 // in Ex. 065? We're going to do the same thing here: use a hard-
 // coded slice to return the type name. That's just so our output
 // looks prettier. Indulge your vanity. Programmers are beautiful.
-fn stripFname(mytype: []const u8) []const u8 {
-    return mytype[22..];
+fn stripFname(comptime mytype: []const u8) []const u8 {
+    const file_suffix = ".zig";
+    const prefix = comptime block: {
+        const file = @src().file;
+        if (!std.mem.endsWith(u8, file, file_suffix)) {
+            @compileError("source file does not end in .zig -> " ++ file);
+        }
+        const pref = file[0..(file.len - file_suffix.len)];
+        if (!std.mem.startsWith(u8, mytype, pref)) {
+            @compileError("type name does not start with filename -> " ++ mytype);
+        }
+        break :block pref;
+    };
+    // To account for both the added '.' and the fact that the slice starts at
+    // the range's start, and we want to start after the last character of the
+    // prefix followed by the added '.'
+    return mytype[(prefix.len + 1)..];
 }
 // The above would be an instant red flag in a "real" program.
+// NOTE: With the above modifications, would it still be a red flag?
