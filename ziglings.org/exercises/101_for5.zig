@@ -41,27 +41,30 @@ const Role = enum {
     thief,
     bard,
     warrior,
-};
 
-pub fn main() void {
-    // Here are the three "property" arrays:
-    const roles = [4]Role{ .wizard, .bard, .bard, .warrior };
-    const gold = [4]u16{ 25, 11, 5, 7392 };
-    const experience = [4]u8{ 40, 17, 55, 21 };
-
-    // We would like to number our list starting with 1, not 0.
-    // How do we do that?
-    for (roles, gold, experience, ???) |c, g, e, i| {
-        const role_name = switch (c) {
+    pub fn name(self: @This()) []const u8 {
+        return switch (self) {
             .wizard => "Wizard",
             .thief => "Thief",
             .bard => "Bard",
             .warrior => "Warrior",
         };
+    }
+};
 
+pub fn main() void {
+    // Here are the three "property" arrays:
+    const size = 4;
+    const roles = [size]Role{ .wizard, .bard, .bard, .warrior };
+    const gold = [size]u16{ 25, 11, 5, 7392 };
+    const experience = [size]u8{ 40, 17, 55, 21 };
+
+    // We would like to number our list starting with 1, not 0.
+    // How do we do that?
+    for (roles, gold, experience, 1..) |c, g, e, i| {
         std.debug.print("{d}. {s} (Gold: {d}, XP: {d})\n", .{
             i,
-            role_name,
+            c.name(),
             g,
             e,
         });
