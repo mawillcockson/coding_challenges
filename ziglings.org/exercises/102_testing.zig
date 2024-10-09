@@ -49,7 +49,7 @@ fn add(a: f16, b: f16) f16 {
 // followed by a description of the tasks
 // of the test. This is followed by the
 // test cases in curly brackets.
-test "add" {
+test add {
 
     // The first test checks if the sum
     // of '41' and '1' gives '42', which
@@ -65,7 +65,7 @@ test "add" {
     try testing.expect(add(5, -4) == 1);
 
     // And a floating point operation:
-    try testing.expect(add(1.5, 1.5) == 3);
+    try testing.expectApproxEqAbs(add(1.5, 1.5), 3, std.math.floatEps(f32) * 10);
 }
 
 // Another simple function
@@ -83,9 +83,9 @@ fn sub(a: f16, b: f16) f16 {
 // an error that you need
 // to correct.
 test "sub" {
-    try testing.expect(sub(10, 5) == 6);
+    try testing.expectEqual(sub(10, 5), 10 - 5);
 
-    try testing.expect(sub(3, 1.5) == 1.5);
+    try testing.expectEqual(sub(3, 1.5), 1.5);
 }
 
 // This function divides the
@@ -94,7 +94,7 @@ test "sub" {
 // denominator must not be zero.
 // This is checked and if it
 // occurs an error is returned.
-fn divide(a: f16, b: f16) !f16 {
+fn divide(a: f16, b: f16) error{DivisionByZero}!f16 {
     if (b == 0) return error.DivisionByZero;
     return a / b;
 }
@@ -108,5 +108,5 @@ test "divide" {
     // Now we test if the function returns an error
     // if we pass a zero as denominator.
     // But which error needs to be tested?
-    try testing.expectError(error.???, divide(15, 0));
+    try testing.expectError(error.DivisionByZero, divide(15, 0));
 }
