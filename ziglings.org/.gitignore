@@ -6,3 +6,5 @@
 
 # Leave this in here for older zig versions
 /zig-cache/
+
+temp.zig
