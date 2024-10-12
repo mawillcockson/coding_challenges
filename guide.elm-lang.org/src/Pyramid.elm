@@ -1,4 +1,4 @@
-module Pyramid exposing (Model, Msg(..), main, update, view)
+module Pyramid exposing (main)
 
 import Browser
 import Html exposing (Html, button, div, pre, text)
