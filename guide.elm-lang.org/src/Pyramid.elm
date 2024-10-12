@@ -6,11 +6,18 @@ import Html.Events exposing (onClick)
 
 
 main =
-    Browser.sandbox { init = { count = 0, invert = False }, update = update, view = view }
+    Browser.sandbox { init = init, update = update, view = view }
 
 
 type alias Model =
     { count : Int, invert : Bool }
+
+
+init : Model
+init =
+    { count = 0
+    , invert = False
+    }
 
 
 type Msg
@@ -39,13 +46,28 @@ view model =
          , button [ onClick Decrement ] [ text "-" ]
          , button [ onClick Invert ] [ text "invert" ]
          ]
-            ++ (List.range 1 model.count
-                    |> (if model.invert then
-                            List.reverse
-
-                        else
-                            \n -> n
-                       )
-                    |> List.map (\n -> pre [] [ text (String.repeat (model.count - n) " " ++ String.repeat (n * 2 - 1) "#" ++ String.repeat (model.count - n) " ") ])
-               )
+            ++ makePyramid model
         )
+
+
+makePyramid : Model -> List (Html Msg)
+makePyramid model =
+    List.range 1 model.count
+        |> (if model.invert then
+                List.reverse
+
+            else
+                \n -> n
+           )
+        |> List.map (pyramidRow model)
+
+
+pyramidRow : Model -> Int -> Html Msg
+pyramidRow model rowNumber =
+    pre []
+        [ text
+            (String.repeat (model.count - rowNumber) " "
+                ++ String.repeat (rowNumber * 2 - 1) "#"
+                ++ String.repeat (model.count - rowNumber) " "
+            )
+        ]
