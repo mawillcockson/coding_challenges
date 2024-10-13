@@ -74,7 +74,7 @@ makePyramid model =
                 List.reverse
 
             else
-                \n -> n
+                identity
            )
         |> List.map (pyramidRow model)
 
