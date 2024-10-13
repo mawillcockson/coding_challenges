@@ -74,8 +74,25 @@ viewInput t p v toMsg =
 
 viewValidation : Model -> Html msg
 viewValidation model =
-    if model.password == model.passwordAgain then
+    if
+        List.foldl (&&)
+            True
+            [ model.password == model.passwordAgain
+            , String.length model.password > 8
+            , goodMix model.password
+            ]
+    then
         div [ style "color" "green" ] [ text "OK" ]
 
     else
         div [ style "color" "red" ] [ text "Passwords do not match!" ]
+
+
+goodMix : String -> Bool
+goodMix password =
+    [ String.any Char.isUpper
+    , String.any Char.isLower
+    , String.any Char.isDigit
+    ]
+        |> List.map ((|>) password)
+        |> List.foldl (&&) True
