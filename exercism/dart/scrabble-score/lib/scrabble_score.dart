@@ -1,12 +1,11 @@
-import 'package:characters/characters.dart';
-
 int score(String tiles) {
   final Map<String, int> tile_values = tileValues();
   return tiles
       .toUpperCase()
-      .characters
-      .map((String char) => (('A'.runes.single) <= char.runes.single &&
-              char.runes.single <= ('Z'.runes.single))
+      .runes
+      .cast<int>()
+      .map(String.fromCharCode)
+      .map((String char) => tile_values.containsKey(char)
           ? tile_values[char]
           : throw ArgumentError.value(
               char, 'char', 'character must be between A and Z, inclusive'))
@@ -31,7 +30,7 @@ Map<String, int> tileValues() {
               .toUpperCase()
               .split(RegExp(r'[,\s]+'))
               .where((String s) => s.isNotEmpty)
-              .map((String s) => s.characters)
+              .map((String s) => s.runes.cast<int>().map(String.fromCharCode))
               .expand((x) => x)
               .toList(),
           entry.value)));
