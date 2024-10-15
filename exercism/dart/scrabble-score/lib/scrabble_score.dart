@@ -47,4 +47,15 @@ Map<String, int> tileValues() {
 
 void main() {
   print(tileValues());
+  assert(score('a') == 1);
+  assert(score('A') == 1);
+  assert(score('f') == 4);
+  assert(score('at') == 2);
+  assert(score('zoo') == 12);
+  assert(score('street') == 6);
+  assert(score('quirky') == 22);
+  assert(score('OxyphenButazone') == 41);
+  assert(score('pinata') == 8);
+  assert(score('') == 0);
+  assert(score('abcdefghijklmnopqrstuvwxyz') == 87);
 }
