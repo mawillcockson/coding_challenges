@@ -24,19 +24,19 @@ Map<String, int> tileValues() {
     'qz': 10,
   };
 
-  final Map<List<String>, int> table = Map.fromEntries(data.entries.map(
-      (MapEntry<String, int> entry) => MapEntry(
+  final Iterable<MapEntry<List<String>, int>> charValues = data.entries.map(
+      (MapEntry<String, int> entry) => MapEntry<List<String>, int>(
           entry.key
               .toUpperCase()
               .split(RegExp(r'[,\s]+'))
               .where((String s) => s.isNotEmpty)
-              .map((String s) => s.runes.cast<int>().map(String.fromCharCode))
-              .expand((x) => x)
+              .expand(
+                  (String s) => s.runes.cast<int>().map(String.fromCharCode))
               .toList(),
-          entry.value)));
+          entry.value));
 
   final Map<String, int> out = {};
-  for (final entry in table.entries) {
+  for (final entry in charValues) {
     out.addEntries(entry.key
         .map((String char) => MapEntry<String, int>(char, entry.value)));
   }
