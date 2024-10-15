@@ -10,8 +10,6 @@ int score(String tiles) {
           : throw ArgumentError.value(
               char, 'char', 'character must be between A and Z, inclusive'))
       .whereType<int>()
-      // I don't like that substituting this with .reduce((a, b) => a + b)
-      // doesn't produce a compile- or runtime error on an empty input
       .fold(0, (int a, int b) => a + b);
 }
 
