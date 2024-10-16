@@ -9,15 +9,16 @@ class AtbashCipher {
       String cipher = 'zyxwvutsrqponmlkjihgfedcba'}) {
     final alphabetSet = alphabet.runes.toSet();
     final cipherSet = cipher.runes.toSet();
-    assert(alphabetSet.containsAll(cipherSet) &&
+    assert(alphabet.length == cipher.length &&
+        alphabetSet.containsAll(cipherSet) &&
         cipherSet.containsAll(alphabetSet));
 
-    final Map<String, String> encipher = {};
-    final Map<String, String> decipher = {};
-    for (int i = 0; i < alphabet.length; i++) {
-      encipher[alphabet[i]] = cipher[i];
-      decipher[cipher[i]] = alphabet[i];
-    }
+    final Map<String, String> encipher = Map.fromIterables(
+        alphabetSet.map(String.fromCharCode),
+        cipherSet.map(String.fromCharCode));
+    final Map<String, String> decipher = Map.fromIterables(
+        cipherSet.map(String.fromCharCode),
+        alphabetSet.map(String.fromCharCode));
     _instance ??= AtbashCipher._internal(
         Map.unmodifiable(encipher), Map.unmodifiable(decipher));
     return _instance!;
@@ -46,15 +47,13 @@ class AtbashCipher {
     return chunked.join(" ");
   }
 
-  String decode(String cipher) => cipher
-      .splitMapJoin(RegExp(r'[\w0-9]'),
-          onMatch: (Match m) => m[0]!
-              .runes
-              .map(String.fromCharCode)
-              .map((String s) => this.decipher[s] ?? s)
-              .join(),
-          onNonMatch: (x) => '')
-      .replaceAll(r'\s+', '');
+  String decode(String cipher) => cipher.splitMapJoin(RegExp(r'[\w0-9]'),
+      onMatch: (Match m) => m[0]!
+          .runes
+          .map(String.fromCharCode)
+          .map((String s) => this.decipher[s] ?? s)
+          .join(),
+      onNonMatch: (x) => '');
 }
 
 void main() {
