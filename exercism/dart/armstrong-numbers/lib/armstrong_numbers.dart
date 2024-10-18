@@ -3,7 +3,7 @@
 // Using BigInts in this version
 
 class ArmstrongNumbers {
-  bool isArmstrongNumber(String number) {
+  static bool isArmstrongNumber(String number) {
     final int num_digits = number.length;
     final BigInt original = BigInt.parse(number, radix: 10);
     List<BigInt> nums = [];
