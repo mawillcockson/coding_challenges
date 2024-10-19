@@ -54,17 +54,17 @@ void main() {
   print('---');
   */
 
-  MyBigInt i = MyBigInt.from(4);
+  /*
+  MyBigInt i = MyBigInt.from(3);
   print('3 -> ${i.asBase2()}');
   i.addInt(1);
   print('4 -> ${i.asBase2()}');
+  */
 
   //print(MyBigInt.parse('23'));
 
-  /*
   final (:quotient, :remainder) = MyBigInt.from(50).divMod(MyBigInt.from(5));
   print('q, r -> ${quotient.asBase2()}, ${remainder.asBase2()}');
-  */
 
   /*
   final bool Function(String) isAN = ArmstrongNumbers().isArmstrongNumber;
@@ -204,6 +204,9 @@ c: 0
           carry = 0;
           break outer;
         }
+        //print('carrying bit at index $i as well');
+        //print('this -> ${this.asBase2()}');
+        this._bits[i] = 0;
       }
     }
     if (carry > 0) {
