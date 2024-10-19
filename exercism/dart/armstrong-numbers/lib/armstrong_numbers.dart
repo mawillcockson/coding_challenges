@@ -336,7 +336,7 @@ b= 0
     }
     MyBigInt count = MyBigInt.from(0);
     MyBigInt copy = this.copy();
-    print('at start, copy -> ${copy.asBase2()}');
+    //print('at start, copy -> ${copy.asBase2()}');
     while (true) {
       try {
         copy = copy - divisor;
@@ -344,11 +344,11 @@ b= 0
         break;
       }
       count.addInt(1);
-      print('count -> ${count.asBase2()}');
+      //print('count -> ${count.asBase2()}');
       if (copy.isZero) {
         break;
       }
-      print('copy -> ${copy.asBase2()}');
+      //print('copy -> ${copy.asBase2()}');
     }
     return (quotient: count, remainder: copy);
   }
@@ -403,20 +403,11 @@ b= 0
   String asBase2() => this._bits.reversed.join();
   String toString() {
     String base10 = "";
-    int magnitude = 0;
-    for (final Bit bit in this._bits) {
-      if (bit == 1) {
-        MyBigInt value = MyBigInt.from(2);
-        value.pow(magnitude);
-        print('value -> ${value.asBase2()}');
-        print('bits ->  ${value._bits}');
-        while (value.isPositive && (!value.isZero)) {
-          final (:quotient, :remainder) = value.divMod(MyBigInt.from(10));
-          base10 += remainder.toInt().toString();
-          value = quotient;
-        }
-      }
-      ++magnitude;
+    MyBigInt value = this.copy();
+    while (value.bitLength > 0) {
+      final (:quotient, :remainder) = value.divMod(MyBigInt.from(10));
+      base10 = remainder.toInt().toString() + base10;
+      value = quotient;
     }
     return base10;
   }
