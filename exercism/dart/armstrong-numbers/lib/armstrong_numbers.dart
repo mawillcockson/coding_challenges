@@ -43,7 +43,6 @@ void main() {
     return (left_ - right_).asBase2();
   }
 
-  /*
   print(testSub(10, 9));
   print('---');
   print(testSub(10, 1));
@@ -52,21 +51,17 @@ void main() {
   print('---');
   print(testSub(50, 5));
   print('---');
-  */
 
-  /*
   MyBigInt i = MyBigInt.from(3);
   print('3 -> ${i.asBase2()}');
   i.addInt(1);
   print('4 -> ${i.asBase2()}');
-  */
 
-  //print(MyBigInt.parse('23'));
+  print(MyBigInt.parse('23'));
 
   final (:quotient, :remainder) = MyBigInt.from(50).divMod(MyBigInt.from(5));
   print('q, r -> ${quotient.asBase2()}, ${remainder.asBase2()}');
 
-  /*
   final bool Function(String) isAN = ArmstrongNumbers().isArmstrongNumber;
   bool seven = isAN('7');
   print(seven);
@@ -78,7 +73,6 @@ void main() {
   print('---');
   bool fourNot = isAN('9475');
   print(fourNot);
-  */
 }
 
 extension IndexableList<T> on List<T> {
@@ -387,7 +381,7 @@ b= 0
       throw Exception('can only raise to the power of positive integers');
     }
 
-    if (power == 1) {
+    if (power == 0) {
       this._bits[0] = 1;
       this._bits.fillRange(1, this._bits.length, 0 as Bit);
       //print('bits -> ${this._bits}');
