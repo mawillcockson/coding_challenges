@@ -50,9 +50,22 @@ void main() {
   print('---');
   print(testSub(9475, 1000));
   print('---');
+  print(testSub(50, 5));
+  print('---');
   */
 
-  print(MyBigInt.parse('23'));
+  MyBigInt i = MyBigInt.from(4);
+  print('3 -> ${i.asBase2()}');
+  i.addInt(1);
+  print('4 -> ${i.asBase2()}');
+
+  //print(MyBigInt.parse('23'));
+
+  /*
+  final (:quotient, :remainder) = MyBigInt.from(50).divMod(MyBigInt.from(5));
+  print('q, r -> ${quotient.asBase2()}, ${remainder.asBase2()}');
+  */
+
   /*
   final bool Function(String) isAN = ArmstrongNumbers().isArmstrongNumber;
   bool seven = isAN('7');
@@ -178,25 +191,27 @@ c: 0
         default:
           throw Exception('Should not have reached this!');
       }
-      print('this -> ${this.asBase2()}');
-      print((' ' * ('this -> '.length + other.bitLength - 1 - i)) + '^');
-      print('c -> $carry');
+      //print('this -> ${this.asBase2()}');
+      //print((' ' * ('this -> '.length + other.bitLength - 1 - i)) + '^');
+      //print('c -> $carry');
     }
     if (carry > 0) {
+      outer:
       for (int i = other.bitLength; i <= this.bitLength - 1; ++i) {
         if (this._bits[i] == 0) {
-          print('found a spot for 1 at index $i');
+          //print('found a spot for 1 at index $i');
           this._bits[i] = 1;
           carry = 0;
+          break outer;
         }
       }
     }
     if (carry > 0) {
-      print('adding 1 to end');
+      //print('adding 1 to end');
       this._bits.add(1);
     }
 
-    print('this -> ${this.asBase2()}');
+    //print('this -> ${this.asBase2()}');
   }
 
   MyBigInt operator +(MyBigInt other) {
@@ -291,10 +306,17 @@ b= 0
       final Bit minuend = this._bits[i];
       switch ((minuend, borrow)) {
         case (1, 1):
+          //print('found a bit to borrow from at index $i');
+          //print('this -> ${this.asBase2()}');
           this._bits[i] = 0;
+          //print('this -> ${this.asBase2()}');
           borrow = 0;
           break outer;
         case (0, 1):
+          //print('borrowing from bit at index $i');
+          //print('this -> ${this.asBase2()}');
+          this._bits[i] = 1;
+          //print('this -> ${this.asBase2()}');
           continue outer;
         default:
           throw Exception('should not reach this');
@@ -311,17 +333,19 @@ b= 0
     }
     MyBigInt count = MyBigInt.from(0);
     MyBigInt copy = this.copy();
+    print('at start, copy -> ${copy.asBase2()}');
     while (true) {
       try {
         copy = copy - divisor;
-        //print('copy -> $copy');
       } on NegativityException {
         break;
       }
       count.addInt(1);
+      print('count -> ${count.asBase2()}');
       if (copy.isZero) {
         break;
       }
+      print('copy -> ${copy.asBase2()}');
     }
     return (quotient: count, remainder: copy);
   }
