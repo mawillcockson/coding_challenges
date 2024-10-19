@@ -3,23 +3,34 @@ import 'dart:math' as math;
 
 class ArmstrongNumbers {
   bool isArmstrongNumber(String number) {
-    final int num_digits = number.length;
     final MyBigInt original = MyBigInt.parse(number);
     final List<MyBigInt> nums = [];
     MyBigInt value = original;
-    while (value > MyBigInt.from(0)) {
+    int numDigits = 0;
+    while (value.bitLength > 0) {
       final (:quotient, :remainder) = value.divMod(MyBigInt.from(10));
+      print('q, r -> $quotient, $remainder');
       nums.add(remainder);
       value = quotient;
+      numDigits += 1;
     }
-    MyBigInt mod = nums
-        // just hope it doesn't overflow (unless there's a way to check for
-        // possible truncation?)
-        .map((MyBigInt x) => x.pow(nums.length))
-        .fold(MyBigInt.from(0), (MyBigInt a, MyBigInt b) => (a + b) % original);
-    return mod == 0;
-
-    return false;
+    // just hope it doesn't overflow (unless there's a way to check for
+    // possible truncation?)
+    print('numDigits -> $numDigits');
+    print('nums -> $nums');
+    nums.forEach((MyBigInt x) => x.pow(numDigits));
+    print('nums ** numDigits -> $nums');
+    MyBigInt sum = nums.fold(MyBigInt.from(0), (MyBigInt a, MyBigInt b) {
+      a.add(b);
+      return a;
+    });
+    print('sum -> $sum');
+    try {
+      sum.subtract(original);
+    } on NegativityException {
+      return false;
+    }
+    return sum.isZero;
   }
 }
 
@@ -72,13 +83,14 @@ class MyBigInt {
     MyBigInt bigInt = MyBigInt.from(0);
 
     for (final int codepoint in number.runes.cast<int>()) {
-      bigInt.addInt(codepoint - asciiDigitOffset);
+      int value = codepoint - asciiDigitOffset;
+      bigInt.addInt(value);
     }
     return bigInt;
   }
 
-  //bool get isPositive => this.lastIndexOf(1) >= 0;
-  //bool get isZero => this.lastIndexOf(1) < 0;
+  //bool get isPositive => this._bits.lastIndexOf(1) >= 0;
+  bool get isZero => this._bits.lastIndexOf(1) < 0;
   int get bitLength => this._bits.lastIndexOf(1) + 1;
 
 /*
@@ -106,7 +118,7 @@ c: 0
   void add(MyBigInt other) {
     Bit carry = 0;
     const Bit fill = 0;
-    for (int i = 0; i <= other.bitLength; ++i) {
+    for (int i = 0; i <= other.bitLength - 1; ++i) {
       final Bit bit = other._bits[i];
       final Bit currentValue = this._bits.getAtDefault(i, 0);
       switch ((currentValue, bit, carry)) {
@@ -131,6 +143,9 @@ c: 0
         default:
           throw Exception('Should not have reached this!');
       }
+    }
+    if (carry > 0) {
+      this._bits.add(carry);
     }
   }
 
@@ -187,7 +202,7 @@ b= 0
     }
     const Bit fill = 0;
     int borrow = 0;
-    for (int i = 0; i <= other.bitLength; ++i) {
+    for (int i = 0; i <= other.bitLength - 1; ++i) {
       final Bit subtrahend = other._bits[i];
       final Bit minuend = this._bits.getAtDefault(i, 0);
       switch ((minuend, subtrahend, borrow)) {
@@ -212,22 +227,7 @@ b= 0
           throw Exception('Should not have reached this!');
       }
     }
-  }
-
-  bool operator >(MyBigInt other) {
-    if (other.bitLength < this.bitLength) {
-      return false;
-    }
-    if (other.bitLength > this.bitLength) {
-      return true;
-    }
-    MyBigInt copy = this.copy();
-    try {
-      copy.subtract(other);
-    } on NegativityException {
-      return true;
-    }
-    return false;
+    assert(borrow == 0);
   }
 
   ({MyBigInt quotient, MyBigInt remainder}) divMod(MyBigInt divisor) {
@@ -271,14 +271,13 @@ b= 0
     }
   }
 
-  MyBigInt pow(int power) {
+  void pow(int power) {
     assert(power is int && power >= 0);
 
-    MyBigInt sum = this.copy();
-    for (int i = 0; i < power; ++i) {
-      sum += this;
+    MyBigInt original = this.copy();
+    for (int i = 1; i < power; ++i) {
+      this.add(original);
     }
-    return sum;
   }
 
   String toString() {
