@@ -12,7 +12,7 @@ class ArmstrongNumbers {
       print('q, r -> $quotient, $remainder');
       nums.add(remainder);
       value = quotient;
-      numDigits += 1;
+      ++numDigits;
     }
     // just hope it doesn't overflow (unless there's a way to check for
     // possible truncation?)
@@ -35,7 +35,14 @@ class ArmstrongNumbers {
 }
 
 void main() {
-  print(ArmstrongNumbers().isArmstrongNumber('7'));
+  final bool Function(String) isAN = ArmstrongNumbers().isArmstrongNumber;
+  bool seven = isAN('7');
+  print(seven);
+  assert(seven);
+  print('---');
+  bool eleven = isAN('11');
+  print(eleven);
+  print(MyBigInt.parse('11'));
 }
 
 extension IndexableList<T> on List<T> {
@@ -82,14 +89,17 @@ class MyBigInt {
   static parse(String number) {
     MyBigInt bigInt = MyBigInt.from(0);
 
+    int magnitude = 1;
     for (final int codepoint in number.runes.cast<int>()) {
       int value = codepoint - asciiDigitOffset;
-      bigInt.addInt(value);
+      print('value -> $value');
+      bigInt.addInt(value * math.pow(10, magnitude).toInt());
+      ++magnitude;
     }
     return bigInt;
   }
 
-  //bool get isPositive => this._bits.lastIndexOf(1) >= 0;
+  bool get isPositive => this._bits.lastIndexOf(1) >= 0;
   bool get isZero => this._bits.lastIndexOf(1) < 0;
   int get bitLength => this._bits.lastIndexOf(1) + 1;
 
@@ -111,7 +121,9 @@ c: 0
 */
 
   void addInt(int other) {
-    assert(other is int && other >= 0);
+    if (other is! int || other < 0) {
+      throw Exception('use subtractInt() for negative numbers');
+    }
     this.add(MyBigInt.from(other));
   }
 
@@ -200,43 +212,55 @@ b= 0
     if (other.bitLength > this._bits.length) {
       throw NegativityException();
     }
+    print('other.bitLength -> ${other.bitLength}');
     const Bit fill = 0;
     int borrow = 0;
     for (int i = 0; i <= other.bitLength - 1; ++i) {
       final Bit subtrahend = other._bits[i];
       final Bit minuend = this._bits.getAtDefault(i, 0);
+      print('(m, s, b) -> ($minuend, $subtrahend, $borrow)');
       switch ((minuend, subtrahend, borrow)) {
         case (0, 0, 0):
-        case (1, 1, 0):
         case (1, 0, 1):
+        case (1, 1, 0):
+          print('case group 1');
           this._bits.setAt(i, 0, fill);
           borrow = 0;
         case (1, 0, 0):
+          print('case group 2');
           this._bits.setAt(i, 1, fill);
           borrow = 0;
-        case (0, 1, 0):
         case (0, 0, 1):
+        case (0, 1, 0):
         case (1, 1, 1):
+          print('case group 3');
           this._bits.setAt(i, 1, fill);
           borrow = 1;
         case (0, 1, 1):
+          print('case group 4');
           this._bits.setAt(i, 0, fill);
           borrow = 1;
 
         default:
+          print('default case');
           throw Exception('Should not have reached this!');
       }
     }
-    assert(borrow == 0);
+    if (borrow != 0) {
+      throw NegativityException();
+    }
   }
 
   ({MyBigInt quotient, MyBigInt remainder}) divMod(MyBigInt divisor) {
+    if (!divisor.isPositive) {
+      throw Exception('divisor should be positive');
+    }
     MyBigInt count = MyBigInt.from(0);
     MyBigInt copy = this.copy();
     while (true) {
       try {
-        copy.subtract(divisor);
-        copy.addInt(1);
+        copy = copy - divisor;
+        count.addInt(1);
       } on NegativityException {
         break;
       }
@@ -257,7 +281,9 @@ b= 0
   }
 
   MyBigInt.from(int number) {
-    assert(number >= 0);
+    if (number is! int || number < 0) {
+      throw Exception('can only cast positive integers');
+    }
     if (number == 0) {
       this._bits.add(0);
       return;
@@ -272,7 +298,9 @@ b= 0
   }
 
   void pow(int power) {
-    assert(power is int && power >= 0);
+    if (power is! int || power < 0) {
+      throw Exception('can only raise to the power of positive integers');
+    }
 
     MyBigInt original = this.copy();
     for (int i = 1; i < power; ++i) {
