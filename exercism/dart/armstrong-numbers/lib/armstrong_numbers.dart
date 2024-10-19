@@ -35,6 +35,20 @@ class ArmstrongNumbers {
 }
 
 void main() {
+  String testSub(int left, int right) {
+    MyBigInt left_ = MyBigInt.from(left);
+    MyBigInt right_ = MyBigInt.from(right);
+    print('$left - $right');
+    print('${left_.asBase2()} - ${right_.asBase2()}');
+    return (left_ - right_).asBase2();
+  }
+
+  print(testSub(10, 9));
+  print(testSub(10, 1));
+  print(testSub(9475, 1000));
+
+  print(MyBigInt.from(9475));
+  /*
   final bool Function(String) isAN = ArmstrongNumbers().isArmstrongNumber;
   bool seven = isAN('7');
   print(seven);
@@ -42,7 +56,11 @@ void main() {
   print('---');
   bool eleven = isAN('11');
   print(eleven);
-  print(MyBigInt.parse('11'));
+  assert(!eleven);
+  print('---');
+  bool fourNot = isAN('9475');
+  print(fourNot);
+  */
 }
 
 extension IndexableList<T> on List<T> {
@@ -213,6 +231,7 @@ b= 0
       throw NegativityException();
     }
     print('other.bitLength -> ${other.bitLength}');
+    final int originalBitLength = this.bitLength;
     const Bit fill = 0;
     int borrow = 0;
     for (int i = 0; i <= other.bitLength - 1; ++i) {
@@ -223,27 +242,43 @@ b= 0
         case (0, 0, 0):
         case (1, 0, 1):
         case (1, 1, 0):
-          print('case group 1');
           this._bits.setAt(i, 0, fill);
           borrow = 0;
         case (1, 0, 0):
-          print('case group 2');
           this._bits.setAt(i, 1, fill);
           borrow = 0;
         case (0, 0, 1):
         case (0, 1, 0):
         case (1, 1, 1):
-          print('case group 3');
           this._bits.setAt(i, 1, fill);
           borrow = 1;
         case (0, 1, 1):
-          print('case group 4');
           this._bits.setAt(i, 0, fill);
           borrow = 1;
 
         default:
           print('default case');
           throw Exception('Should not have reached this!');
+      }
+      print('this -> ${this.asBase2()}');
+      print((' ' * ('this -> '.length + originalBitLength - 1 - i)) + '^');
+      print('b -> $borrow');
+    }
+    if (borrow == 0) {
+      return;
+    }
+    outer:
+    for (int i = other.bitLength; i <= this.bitLength - 1; ++i) {
+      final Bit minuend = this._bits[i];
+      switch ((minuend, borrow)) {
+        case (1, 1):
+          this._bits[i] = 0;
+          borrow = 0;
+          break outer;
+        case (0, 1):
+          continue outer;
+        default:
+          throw Exception('should not reach this');
       }
     }
     if (borrow != 0) {
@@ -260,8 +295,12 @@ b= 0
     while (true) {
       try {
         copy = copy - divisor;
-        count.addInt(1);
+        print('copy -> $copy');
       } on NegativityException {
+        break;
+      }
+      count.addInt(1);
+      if (copy == 0) {
         break;
       }
     }
@@ -308,8 +347,23 @@ b= 0
     }
   }
 
+  String asBase2() => this._bits.reversed.join();
   String toString() {
-    return this._bits.reversed.join();
+    String base10 = "";
+    int magnitude = 1;
+    for (final Bit bit in this._bits) {
+      if (bit == 1) {
+        MyBigInt value = MyBigInt.from(2);
+        value.pow(magnitude);
+        while (value.isPositive && (!value.isZero)) {
+          final (:quotient, :remainder) = value.divMod(MyBigInt.from(10));
+          base10 += remainder.toInt().toString();
+          value = quotient;
+        }
+        ++magnitude;
+      }
+    }
+    return base10;
   }
 }
 
