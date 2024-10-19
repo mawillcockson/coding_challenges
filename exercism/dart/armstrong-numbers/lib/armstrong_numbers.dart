@@ -43,11 +43,16 @@ void main() {
     return (left_ - right_).asBase2();
   }
 
+  /*
   print(testSub(10, 9));
+  print('---');
   print(testSub(10, 1));
+  print('---');
   print(testSub(9475, 1000));
+  print('---');
+  */
 
-  print(MyBigInt.from(9475));
+  print(MyBigInt.parse('23').asBase2());
   /*
   final bool Function(String) isAN = ArmstrongNumbers().isArmstrongNumber;
   bool seven = isAN('7');
@@ -107,10 +112,12 @@ class MyBigInt {
   static parse(String number) {
     MyBigInt bigInt = MyBigInt.from(0);
 
-    int magnitude = 1;
-    for (final int codepoint in number.runes.cast<int>()) {
+    int magnitude = 0;
+    for (final int codepoint in number.runes.cast<int>().toList().reversed) {
       int value = codepoint - asciiDigitOffset;
-      print('value -> $value');
+      //print('number -> $number');
+      //print(' ' * ('number -> '.length + number.length - magnitude - 1) + '^');
+      //print('digit -> $value');
       bigInt.addInt(value * math.pow(10, magnitude).toInt());
       ++magnitude;
     }
@@ -227,17 +234,17 @@ b= 0
   void subtractInt(int other) => this.subtract(MyBigInt.from(other));
 
   void subtract(MyBigInt other) {
-    if (other.bitLength > this._bits.length) {
+    if (other.bitLength > this.bitLength) {
       throw NegativityException();
     }
-    print('other.bitLength -> ${other.bitLength}');
+    //print('other.bitLength -> ${other.bitLength}');
     final int originalBitLength = this.bitLength;
     const Bit fill = 0;
     int borrow = 0;
     for (int i = 0; i <= other.bitLength - 1; ++i) {
       final Bit subtrahend = other._bits[i];
       final Bit minuend = this._bits.getAtDefault(i, 0);
-      print('(m, s, b) -> ($minuend, $subtrahend, $borrow)');
+      //print('(m, s, b) -> ($minuend, $subtrahend, $borrow)');
       switch ((minuend, subtrahend, borrow)) {
         case (0, 0, 0):
         case (1, 0, 1):
@@ -257,12 +264,11 @@ b= 0
           borrow = 1;
 
         default:
-          print('default case');
           throw Exception('Should not have reached this!');
       }
-      print('this -> ${this.asBase2()}');
-      print((' ' * ('this -> '.length + originalBitLength - 1 - i)) + '^');
-      print('b -> $borrow');
+      //print('this -> ${this.asBase2()}');
+      //print((' ' * ('this -> '.length + originalBitLength - 1 - i)) + '^');
+      //print('b -> $borrow');
     }
     if (borrow == 0) {
       return;
@@ -295,12 +301,12 @@ b= 0
     while (true) {
       try {
         copy = copy - divisor;
-        print('copy -> $copy');
+        //print('copy -> $copy');
       } on NegativityException {
         break;
       }
       count.addInt(1);
-      if (copy == 0) {
+      if (copy.isZero) {
         break;
       }
     }
@@ -360,8 +366,8 @@ b= 0
           base10 += remainder.toInt().toString();
           value = quotient;
         }
-        ++magnitude;
       }
+      ++magnitude;
     }
     return base10;
   }
