@@ -52,7 +52,7 @@ void main() {
   print('---');
   */
 
-  print(MyBigInt.parse('23').asBase2());
+  print(MyBigInt.parse('23'));
   /*
   final bool Function(String) isAN = ArmstrongNumbers().isArmstrongNumber;
   bool seven = isAN('7');
@@ -157,33 +157,46 @@ c: 0
     const Bit fill = 0;
     for (int i = 0; i <= other.bitLength - 1; ++i) {
       final Bit bit = other._bits[i];
-      final Bit currentValue = this._bits.getAtDefault(i, 0);
+      final Bit currentValue = this._bits.getAtDefault(i, fill);
       switch ((currentValue, bit, carry)) {
         case (0, 0, 0):
-          this._bits.setAt(i, 0, fill);
-        case (1, 0, 0):
-        case (0, 1, 0):
-          this._bits.setAt(i, 1, fill);
-        case (0, 0, 1):
-          this._bits.setAt(i, 1, fill);
           carry = 0;
-        case (1, 1, 0):
           this._bits.setAt(i, 0, fill);
-          carry = 1;
+        case (0, 0, 1):
+        case (0, 1, 0):
+        case (1, 0, 0):
+          carry = 0;
+          this._bits.setAt(i, 1, fill);
         case (0, 1, 1):
         case (1, 0, 1):
+        case (1, 1, 0):
+          carry = 1;
           this._bits.setAt(i, 0, fill);
-          carry = 1;
         case (1, 1, 1):
-          this._bits.setAt(i, 1, fill);
           carry = 1;
+          this._bits.setAt(i, 1, fill);
         default:
           throw Exception('Should not have reached this!');
       }
+      print('this -> ${this.asBase2()}');
+      print((' ' * ('this -> '.length + other.bitLength - 1 - i)) + '^');
+      print('c -> $carry');
     }
     if (carry > 0) {
-      this._bits.add(carry);
+      for (int i = other.bitLength; i <= this.bitLength - 1; ++i) {
+        if (this._bits[i] == 0) {
+          print('found a spot for 1 at index $i');
+          this._bits[i] = 1;
+          carry = 0;
+        }
+      }
     }
+    if (carry > 0) {
+      print('adding 1 to end');
+      this._bits.add(1);
+    }
+
+    print('this -> ${this.asBase2()}');
   }
 
   MyBigInt operator +(MyBigInt other) {
@@ -347,6 +360,13 @@ b= 0
       throw Exception('can only raise to the power of positive integers');
     }
 
+    if (power == 1) {
+      this._bits[0] = 1;
+      this._bits.fillRange(1, this._bits.length, 0 as Bit);
+      //print('bits -> ${this._bits}');
+      return;
+    }
+
     MyBigInt original = this.copy();
     for (int i = 1; i < power; ++i) {
       this.add(original);
@@ -356,11 +376,13 @@ b= 0
   String asBase2() => this._bits.reversed.join();
   String toString() {
     String base10 = "";
-    int magnitude = 1;
+    int magnitude = 0;
     for (final Bit bit in this._bits) {
       if (bit == 1) {
         MyBigInt value = MyBigInt.from(2);
         value.pow(magnitude);
+        print('value -> ${value.asBase2()}');
+        print('bits ->  ${value._bits}');
         while (value.isPositive && (!value.isZero)) {
           final (:quotient, :remainder) = value.divMod(MyBigInt.from(10));
           base10 += remainder.toInt().toString();
