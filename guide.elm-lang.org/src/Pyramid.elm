@@ -7,7 +7,7 @@ import Html.Events exposing (onClick, onInput)
 
 
 main =
-    Browser.sandbox { init = init, update = update, view = view }
+    Browser.document { init = init, update = update, view = view }
 
 
 type alias Model =
@@ -54,7 +54,13 @@ update msg model =
             { model | character = character }
 
 
-view : Model -> Html Msg
+type alias Document msg =
+    { title : String
+    , body : List (Html msg)
+    }
+
+
+view : Model -> Document Msg
 view model =
     div []
         ([ button [ onClick Increment ] [ text "+" ]
@@ -67,7 +73,7 @@ view model =
         )
 
 
-makePyramid : Model -> List (Html Msg)
+makePyramid : Model -> List (Document Msg)
 makePyramid model =
     List.range 1 model.count
         |> (if model.invert then

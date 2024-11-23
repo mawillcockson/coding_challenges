@@ -56,12 +56,18 @@ void main() {
   print('3 -> ${i.asBase2()}');
   i.addInt(1);
   print('4 -> ${i.asBase2()}');
+  i = MyBigInt.from(1);
+  i.pow(2);
+  print('
 
-  print(MyBigInt.parse('23'));
+  //print(MyBigInt.parse('23'));
 
+  /*
   final (:quotient, :remainder) = MyBigInt.from(50).divMod(MyBigInt.from(5));
   print('q, r -> ${quotient.asBase2()}, ${remainder.asBase2()}');
+  */
 
+  /*
   final bool Function(String) isAN = ArmstrongNumbers().isArmstrongNumber;
   bool seven = isAN('7');
   print(seven);
@@ -73,6 +79,8 @@ void main() {
   print('---');
   bool fourNot = isAN('9475');
   print(fourNot);
+  assert(!fourNot);
+  */
 }
 
 extension IndexableList<T> on List<T> {
@@ -389,8 +397,11 @@ b= 0
     }
 
     MyBigInt original = this.copy();
+    print('this at start ->     ${this}');
+    print('original at start -> ${original}');
     for (int i = 1; i < power; ++i) {
       this.add(original);
+      print('this -> ${this}');
     }
   }
 
