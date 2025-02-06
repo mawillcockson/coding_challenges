@@ -101,15 +101,15 @@ VALUES
 WITH
   period_totals AS (
     SELECT
-      UnitsSold.product_id,
-      units * price AS period_total,
-      units
+      p.product_id,
+      coalesce(units * price, 0) AS period_total,
+      coalesce(units, 0) as units
     FROM
-      UnitsSold
-      INNER JOIN Prices ON UnitsSold.product_id = Prices.product_id
+      Prices AS p
+      LEFT OUTER JOIN UnitsSold AS us ON us.product_id = p.product_id
       AND (
-        (UnitsSold.purchase_date, UnitsSold.purchase_date) OVERLAPS (Prices.start_date, Prices.end_date)
-        OR UnitsSold.purchase_date = Prices.end_date
+        (us.purchase_date, us.purchase_date) OVERLAPS (p.start_date, p.end_date)
+        OR us.purchase_date = p.end_date
       )
   )
 SELECT
