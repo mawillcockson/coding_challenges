@@ -91,6 +91,7 @@ VALUES
   ('200', 'Apple'),
   ('300', 'Samsung');
 
+/* test case # 2 */
 TRUNCATE TABLE Sales;
 
 INSERT INTO
@@ -2180,106 +2181,40 @@ VALUES
   ('76', 'HDSxZ'),
   ('77', 'vjWklx');
 
+/**/
 ALTER TABLE Sales ADD CONSTRAINT product_id_fk FOREIGN key (product_id) REFERENCES Product (product_id);
 
 ALTER TABLE Sales VALIDATE CONSTRAINT product_id_fk;
 
+/* check data properties
 SELECT
-  *
+*
 FROM
-  Sales
+Sales
 WHERE
-  product_id = 34;
+product_id = 34
+AND "year" = 1804;
+*/
 
 WITH
-  selected_product_ids (selected_product_ids_row_id, product_id) AS (
-    SELECT
-      row_number() OVER () AS selected_product_ids_row_id,
-      alias1.product_id AS product_id
-    FROM
-      (
-        VALUES
-          (51),
-          (64),
-          (34),
-          (14),
-          (67),
-          (59),
-          (70),
-          (74),
-          (43),
-          (76),
-          (35),
-          (52),
-          (32),
-          (44),
-          (71),
-          (12),
-          (30),
-          (7),
-          (24),
-          (27)
-      ) AS alias1 (product_id)
-  ),
   first_years AS (
     SELECT
-      s.product_id,
+      s.product_id AS product_id,
       min(s."year") AS first_year
     FROM
-      selected_product_ids AS spi
-      INNER JOIN Sales AS s ON s.product_id = spi.product_id
+      Sales AS s
     GROUP BY
       s.product_id
-  ),
-  prepenultimate AS (
-    SELECT
-      fy.product_id AS product_id,
-      fy.first_year AS first_year,
-      sum(s.quantity) AS quantity,
-      sum(price) AS price
-      --| product_id | first_year | quantity | price |
-    FROM
-      first_years AS fy
-      INNER JOIN Sales AS s ON s."year" = fy.first_year
-      AND s.product_id = fy.product_id
-    GROUP BY
-      fy.product_id,
-      fy.first_year
-  ),
-  penultimate AS (
-    SELECT
-      p.product_id AS product_id,
-      p.first_year AS first_year,
-      p.quantity AS quantity,
-      p.price AS price
-    FROM
-      prepenultimate AS p
-      INNER JOIN selected_product_ids AS spi ON p.product_id = spi.product_id
-    ORDER BY
-      spi.selected_product_ids_row_id
   )
-SELECT
-  p.product_id AS product_id,
-  p.first_year AS first_year,
-  p.quantity AS quantity,
-  p.price AS price
+SELECT -- product_id | first_year | quantity | price
+  fy.product_id AS product_id,
+  fy.first_year AS first_year,
+  s.quantity AS quantity,
+  s.price AS price
 FROM
-  penultimate AS p
-UNION ALL
-SELECT
-  p1.product_id AS product_id,
-  p1.first_year AS first_year,
-  p1.quantity AS quantity,
-  p1.price AS price
-FROM
-  penultimate AS p1
-WHERE
-  p1.product_id NOT IN (
-    SELECT
-      product_id
-    FROM
-      selected_product_ids
-  );
+  Sales AS s
+  INNER JOIN first_years AS fy ON s."year" = fy.first_year
+  AND s.product_id = fy.product_id;
 
 ROLLBACK TO "test";
 
