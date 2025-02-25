@@ -82,7 +82,32 @@ VALUES
   ('Cat', 'Siamese', '3', '3'),
   ('Cat', 'Sphynx', '7', '4');
 
-select query_name, round(cast(avg(cast(rating as float) / position) as numeric), 2) as quality, round(cast(cast(count(case when rating < 3 then 1 else null end) as float) / count(rating) * 100 as numeric), 2) as poor_query_percentage from Queries group by query_name;
+explain SELECT
+    query_name,
+    round(
+        cast(
+            avg(cast(rating as float) / position)
+            AS numeric
+        ),
+        2
+    ) as quality,
+    round(
+        cast(
+            cast(
+                count(
+                    CASE
+                        WHEN rating < 3 THEN 1
+                        ELSE NULL
+                    END
+                )
+                AS float
+            ) / count(rating) * 100
+            AS numeric
+        ),
+        2
+    ) AS poor_query_percentage
+FROM Queries
+GROUP BY query_name;
 
 ROLLBACK TO "test";
 
