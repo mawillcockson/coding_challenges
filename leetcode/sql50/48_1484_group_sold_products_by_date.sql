@@ -60,13 +60,14 @@ INSERT INTO
   Activities (sell_date, product)
 VALUES
   ('2020-05-30', 'Headphone'),
-  ('2020-06-01', 'Pencil'),
-  ('2020-06-02', 'Mask'),
+  ('2020-06-02', 'Mask'), -- these two are swapped as
+  ('2020-06-01', 'Pencil'), -- compared to the test case
   ('2020-05-30', 'Basketball'),
   ('2020-06-01', 'Bible'),
   ('2020-06-02', 'Mask'),
   ('2020-05-30', 'T-Shirt');
 
+EXPLAIN
 SELECT
   sell_date,
   count(DISTINCT product) AS "num_sold",
@@ -80,6 +81,28 @@ FROM
   Activities
 GROUP BY
   sell_date;
+
+CREATE TABLE test1 (
+  a_date date NOT NULL,
+  b_text text NOT NULL CHECK (b_text <> '')
+);
+
+INSERT INTO
+  test1 (a_date, b_text)
+VALUES
+  ('2020-01-01', 'a'),
+  ('2020-01-01', 'b'),
+  ('2020-01-02', 'c'),
+  ('2020-01-02', 'd');
+
+explain
+SELECT
+  a_date,
+  array_agg (/*DISTINCT*/ b_text /*ORDER BY b_text*/)
+FROM
+  test1
+GROUP BY
+  a_date;
 
 ROLLBACK TO "test";
 
