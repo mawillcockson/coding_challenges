@@ -1,0 +1,11 @@
+# my own
+.bsp/
+.scala-build/
+
+# from:
+# https://github.com/github/gitignore/blob/5b0261b4675e803934284a1c37eb478c38a89030/Scala.gitignore
+*.class
+*.log
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
