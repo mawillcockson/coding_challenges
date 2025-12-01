@@ -112,10 +112,10 @@ rotateCharGuard offset character
 
 caesar :: Int -> String -> String
 caesar _ [] = []
-caesar offset message = map (\character -> rotateCharGuard offset character) message
+caesar offset = map (\character -> rotateCharGuard offset character)
 
 rot13 :: String -> String
-rot13 message = caesar 13 message
+rot13 = caesar 13
 
 rot135 :: String -> String
 rot135 message = map (symmetricallyRotateByType) message where
