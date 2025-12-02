@@ -1,9 +1,9 @@
-module Lines (main, lines, unlines, words, unwords) where
+module Lines (example, lines, unlines, words, unwords) where
 
 import Prelude hiding (lines, unlines, words, unwords)
 
-main :: IO ()
-main = do
+example :: IO ()
+example = do
     linesTest
     unlinesTest
     wordsTest

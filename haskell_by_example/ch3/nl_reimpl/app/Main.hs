@@ -1,6 +1,6 @@
 module Main (
-    mainV1,
     main,
+    mainV1,
     interactiveLinesV1,
     interactiveLinesV2,
     doReturn,
@@ -26,11 +26,19 @@ module Main (
     prettyNumberedLines,
     mapM,
     mapM_,
+    mainV2,
+    mainV3,
+    parseArgumentsV2,
+    count,
     ) where
 
 import Prelude hiding (zip, unzip, zipWith, mapM, mapM_)
 import qualified Data.Char (toUpper, isPrint, isSeparator)
 import qualified System.Environment (getProgName, getArgs)
+import qualified Data.Either (lefts, rights, either)
+
+main :: IO ()
+main = mainV3
 
 interactiveLinesV1 :: IO ()
 interactiveLinesV1 = do
@@ -60,16 +68,21 @@ printHelpText :: String -> IO ()
 printHelpText msg = do
     putStrLn (msg ++ "\n")
     progName <- System.Environment.getProgName
-    putStrLn ("Usage: " ++ progName ++ " <filename>")
+    putStrLn ("Usage: " ++ progName ++ "<options> <filename>")
+    putStrLn "\n"
+    putStrLn " Options:"
+    putStrLn "   --reverse      - Reverse the numbering"
+    putStrLn "   --skip-empty   - Skip numbering empty lines"
+    putStrLn "   --left-align   - Use left-aligned line numbers"
 
-parseArguments :: [String] -> Maybe FilePath
-parseArguments [filePath] = Just filePath
-parseArguments _ = Nothing
+parseArgumentsV1 :: [String] -> Maybe FilePath
+parseArgumentsV1 [filePath] = Just filePath
+parseArgumentsV1 _ = Nothing
 
 mainV1 :: IO ()
 mainV1 = do
     cliArgs <- System.Environment.getArgs
-    let mFilePath = parseArguments cliArgs
+    let mFilePath = parseArgumentsV1 cliArgs
     maybe
         (printHelpText "Missing filename")
         (\filePath -> putStrLn filePath)
@@ -191,10 +204,10 @@ mapM_ action (x:xs) = do
     _ <- action x
     mapM_ action xs
 
-main :: IO ()
-main = do
+mainV2 :: IO ()
+mainV2 = do
     cliArgs <- System.Environment.getArgs
-    let mFilePath = parseArguments cliArgs
+    let mFilePath = parseArgumentsV1 cliArgs
     maybe
         (printHelpText "Missing filename")
         (\filePath -> do
@@ -204,3 +217,56 @@ main = do
             mapM_ (putStrLn) prettyNumbered
         )
         mFilePath
+
+data ProgramOption
+    = ReverseNumbering
+    | SkipEmptyLines
+    | LeftAlign
+    deriving (Eq, Show)
+
+lnOptionFromString :: String -> Either String ProgramOption
+lnOptionFromString "--reverse" = Right ReverseNumbering
+lnOptionFromString "--skip-empty" = Right SkipEmptyLines
+lnOptionFromString "--left-align" = Right LeftAlign
+lnOptionFromString option = Left option
+
+count :: (a -> Bool) -> [a] -> Int
+count _ [] = 0
+count classifier (x:xs)
+    | classifier x = 1 + (count classifier xs)
+    | otherwise = count classifier xs
+
+parseArgumentsV2 :: [String] -> Either String (FilePath, [ProgramOption])
+parseArgumentsV2 arguments =
+    let parsed = map lnOptionFromString arguments
+        allLefts = Data.Either.lefts parsed
+    in case allLefts of
+        [filePath] -> Right (filePath, Data.Either.rights parsed)
+        unkownOptions -> Left $ "expected exactly 1 filename; instead got " ++ (show unkownOptions)
+
+-- I want to ride the ROP train:
+-- https://fsharpforfunandprofit.com/rop/
+-- https://tgdwyer.github.io/eithers/#example
+mainV3 :: IO ()
+mainV3 = do
+    cliArgs <- System.Environment.getArgs
+    let eFilePathAndOptions = parseArgumentsV2 cliArgs
+    Data.Either.either
+        (printHelpText)
+        (\(filePath, options) -> do
+            fileLines <- readLines filePath
+            let numberFunc = if SkipEmptyLines `elem` options
+                    then numberNonEmptyLines
+                    else numberAllLines
+                reverseOrNo = if ReverseNumbering `elem` options
+                    then reverse
+                    else id
+                numberedLines = numberFunc $ reverseOrNo fileLines
+                mode = if LeftAlign `elem` options
+                    then PadRight
+                    else PadLeft
+                prettyNumbered = reverseOrNo $ prettyNumberedLines mode numberedLines
+            mapM_ (putStrLn) prettyNumbered
+            putStrLn $ show options
+        )
+        eFilePathAndOptions

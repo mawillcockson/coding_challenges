@@ -25,7 +25,11 @@ source-repository head
 
 library
   exposed-modules:
+      IndexOf
+      Integers
       Lib
+      Lines
+      TasteOfMonad
   other-modules:
       Paths_nl
   autogen-modules:
@@ -40,10 +44,6 @@ library
 executable nl-exe
   main-is: Main.hs
   other-modules:
-      IndexOf
-      Integers
-      Lines
-      TasteOfMonad
       Paths_nl
   autogen-modules:
       Paths_nl

@@ -1,7 +1,7 @@
-module Integers (main) where
+module Integers (example) where
 
-main :: IO ()
-main = do
+example :: IO ()
+example = do
     putStrLn $ "f(-100): " ++ (show $ f (-100))
     putStrLn $ "f(0): " ++ (show $ f 0)
     putStrLn $ "f(1): " ++ (show $ f 1)
