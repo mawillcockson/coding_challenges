@@ -64,17 +64,22 @@ repeatUpper = do
     line <- getLine
     putStrLn (map Data.Char.toUpper line)
 
-printHelpText :: String -> IO ()
-printHelpText msg = do
+printErrorAndHelpText :: String -> IO ()
+printErrorAndHelpText msg = do
     putStrLn (msg ++ "\n")
+    printHelpText
+
+printHelpText :: IO ()
+printHelpText = do
     progName <- System.Environment.getProgName
-    putStrLn ("Usage: " ++ progName ++ "<options> <filename>")
+    putStrLn ("Usage: " ++ progName ++ " <options> <filename>")
     putStrLn "\n"
     putStrLn " Options:"
     putStrLn "   --reverse          - Reverse the numbering"
     putStrLn "   --skip-empty       - Skip numbering empty lines"
     putStrLn "   --no-count-empty   - Don't count empty lines"
     putStrLn "   --left-align       - Use left-aligned line numbers"
+    putStrLn "   --help             - print this help text"
 
 parseArgumentsV1 :: [String] -> Maybe FilePath
 parseArgumentsV1 [filePath] = Just filePath
@@ -85,7 +90,7 @@ mainV1 = do
     cliArgs <- System.Environment.getArgs
     let mFilePath = parseArgumentsV1 cliArgs
     maybe
-        (printHelpText "Missing filename")
+        (printErrorAndHelpText "Missing filename")
         (\filePath -> putStrLn filePath)
         mFilePath
 
@@ -210,7 +215,7 @@ mainV2 = do
     cliArgs <- System.Environment.getArgs
     let mFilePath = parseArgumentsV1 cliArgs
     maybe
-        (printHelpText "Missing filename")
+        (printErrorAndHelpText "Missing filename")
         (\filePath -> do
             fileLines <- readLines filePath
             let numberedLines = numberAllLines fileLines
@@ -224,6 +229,7 @@ data ProgramOption
     | SkipEmptyLines
     | LeftAlign
     | NoIncrementEmpty
+    | HelpOption
     deriving (Eq, Show)
 
 lnOptionFromString :: String -> Either String ProgramOption
@@ -231,6 +237,7 @@ lnOptionFromString "--reverse" = Right ReverseNumbering
 lnOptionFromString "--skip-empty" = Right SkipEmptyLines
 lnOptionFromString "--no-count-empty" = Right NoIncrementEmpty
 lnOptionFromString "--left-align" = Right LeftAlign
+lnOptionFromString "--help" = Right HelpOption
 lnOptionFromString option = Left option
 
 count :: (a -> Bool) -> [a] -> Int
@@ -255,23 +262,25 @@ mainV3 = do
     cliArgs <- System.Environment.getArgs
     let eFilePathAndOptions = parseArgumentsV2 cliArgs
     Data.Either.either
-        (printHelpText)
-        (\(filePath, options) -> do
-            fileLines <- readLines filePath
-            let numberFunc = case (SkipEmptyLines `elem` options, NoIncrementEmpty `elem` options) of
-                    (True, True) -> numberAndIncrementNonEmptyLines
-                    (True, False) -> numberNonEmptyLines
-                    (False, True) -> incrementNonEmptyAndNumberAllLines
-                    (False, False) -> numberAllLines
-                reverseOrNo = if ReverseNumbering `elem` options
-                    then reverse
-                    else id
-                numberedLines = numberFunc $ reverseOrNo fileLines
-                mode = if LeftAlign `elem` options
-                    then PadRight
-                    else PadLeft
-                prettyNumbered = reverseOrNo $ prettyNumberedLines mode numberedLines
-            mapM_ (putStrLn) prettyNumbered
-            putStrLn $ show options
+        (printErrorAndHelpText)
+        (\(filePath, options) -> if HelpOption `elem` options
+            then printHelpText
+            else do
+                fileLines <- readLines filePath
+                let numberFunc = case (SkipEmptyLines `elem` options, NoIncrementEmpty `elem` options) of
+                        (True, True) -> numberAndIncrementNonEmptyLines
+                        (True, False) -> numberNonEmptyLines
+                        (False, True) -> incrementNonEmptyAndNumberAllLines
+                        (False, False) -> numberAllLines
+                    reverseOrNo = if ReverseNumbering `elem` options
+                        then reverse
+                        else id
+                    numberedLines = numberFunc $ reverseOrNo fileLines
+                    mode = if LeftAlign `elem` options
+                        then PadRight
+                        else PadLeft
+                    prettyNumbered = reverseOrNo $ prettyNumberedLines mode numberedLines
+                mapM_ (putStrLn) prettyNumbered
+                --putStrLn $ show options
         )
         eFilePathAndOptions
