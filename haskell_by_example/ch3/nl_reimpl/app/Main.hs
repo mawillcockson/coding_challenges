@@ -71,9 +71,10 @@ printHelpText msg = do
     putStrLn ("Usage: " ++ progName ++ "<options> <filename>")
     putStrLn "\n"
     putStrLn " Options:"
-    putStrLn "   --reverse      - Reverse the numbering"
-    putStrLn "   --skip-empty   - Skip numbering empty lines"
-    putStrLn "   --left-align   - Use left-aligned line numbers"
+    putStrLn "   --reverse          - Reverse the numbering"
+    putStrLn "   --skip-empty       - Skip numbering empty lines"
+    putStrLn "   --no-count-empty   - Don't count empty lines"
+    putStrLn "   --left-align       - Use left-aligned line numbers"
 
 parseArgumentsV1 :: [String] -> Maybe FilePath
 parseArgumentsV1 [filePath] = Just filePath
@@ -222,11 +223,13 @@ data ProgramOption
     = ReverseNumbering
     | SkipEmptyLines
     | LeftAlign
+    | NoIncrementEmpty
     deriving (Eq, Show)
 
 lnOptionFromString :: String -> Either String ProgramOption
 lnOptionFromString "--reverse" = Right ReverseNumbering
 lnOptionFromString "--skip-empty" = Right SkipEmptyLines
+lnOptionFromString "--no-count-empty" = Right NoIncrementEmpty
 lnOptionFromString "--left-align" = Right LeftAlign
 lnOptionFromString option = Left option
 
@@ -255,9 +258,11 @@ mainV3 = do
         (printHelpText)
         (\(filePath, options) -> do
             fileLines <- readLines filePath
-            let numberFunc = if SkipEmptyLines `elem` options
-                    then numberNonEmptyLines
-                    else numberAllLines
+            let numberFunc = case (SkipEmptyLines `elem` options, NoIncrementEmpty `elem` options) of
+                    (True, True) -> numberAndIncrementNonEmptyLines
+                    (True, False) -> numberNonEmptyLines
+                    (False, True) -> incrementNonEmptyAndNumberAllLines
+                    (False, False) -> numberAllLines
                 reverseOrNo = if ReverseNumbering `elem` options
                     then reverse
                     else id
