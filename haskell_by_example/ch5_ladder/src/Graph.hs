@@ -1,4 +1,8 @@
-module Graph where
+module Graph (
+    member,
+    hasNode,
+    addNode,
+    ) where
 
 type DiGraph a = [(a, [a])]
 
