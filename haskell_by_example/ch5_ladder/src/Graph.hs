@@ -2,6 +2,7 @@ module Graph (
     member,
     hasNode,
     addNode,
+    alter,
     ) where
 
 type DiGraph a = [(a, [a])]
@@ -18,11 +19,7 @@ addNode graph element
     | otherwise = (element, []) : graph
 
 alter :: Eq k => (Maybe v -> Maybe v) -> k -> [(k, v)] -> [(k, v)]
-alter func key [] = case func Nothing of
-    Nothing -> []
-    Just value -> [(key, value)]
+alter func key [] = maybe ([]) (\value -> [(key, value)]) (func Nothing)
 alter func key ((key', value'):xs)
-    | key == key' = case func (Just value') of
-        Nothing -> xs
-        Just newValue -> (key', newValue) : xs
+    | key == key' = maybe (xs) (\newValue -> (key', newValue) : xs) (func (Just value'))
     | otherwise = (key', value') : (alter func key xs)
