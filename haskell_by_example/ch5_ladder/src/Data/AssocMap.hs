@@ -1,4 +1,5 @@
 module Data.AssocMap (
+    main,
     AssocMap,
     member,
     alter,
