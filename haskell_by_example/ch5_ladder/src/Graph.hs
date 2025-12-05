@@ -3,12 +3,14 @@ module Graph (
     addNode,
     ) where
 
-import qualified Data.AssocMap (member)
-
 type DiGraph a = [(a, [a])]
 
+member :: Eq a => a -> DiGraph a -> Bool
+member _ [] = False
+member key ((key', _):xs) = key == key' || (member key xs)
+
 hasNode :: Eq a => DiGraph a -> a -> Bool
-hasNode = flip Data.AssocMap.member
+hasNode = flip member
 
 addNode :: Eq a => DiGraph a -> a -> DiGraph a
 addNode graph element
