@@ -10,10 +10,13 @@ module Data.AssocMap (
     insert,
     Data.AssocMap.lookup,
     findWithDefault,
+    parents,
     ) where
 
 import Data.Maybe (fromJust, fromMaybe)
 import Data.Function ((&))
+import qualified Data.Tuple (fst)
+import qualified Data.List (unzip)
 
 main :: IO ()
 main = do
@@ -36,6 +39,7 @@ main = do
     putStrLn $ "Upsert {3: 3} -> " ++ (ups 3 3 & show)
     putStrLn $ "Delete {2: 3} -> " ++ (del 2 & show)
     putStrLn $ "Delete {3: 3} -> " ++ (del 3 & show)
+    putStrLn $ "Parents example -> " ++ (parents example & show)
 
 newtype AssocMap k v = AssocMap [(k, v)]
     deriving (Show)
@@ -84,3 +88,6 @@ lookup (AssocMap graph) key = lookup' key graph
 
 findWithDefault :: Eq k => AssocMap k v -> v -> k -> v
 findWithDefault graph defaultValue key = fromMaybe defaultValue (Data.AssocMap.lookup graph key)
+
+parents :: AssocMap k v -> [k]
+parents (AssocMap graph) = graph & Data.List.unzip & Data.Tuple.fst

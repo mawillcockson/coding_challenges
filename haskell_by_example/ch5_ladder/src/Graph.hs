@@ -75,10 +75,6 @@ deleteEdge graph startNode endNode = AM.alter graph (aux) startNode where
     aux (Just [node]) = Nothing
     aux (Just nodes) = Just $ nodes Data.List.\\ [endNode]
 
--- BUG: actually need to remove node from every other node in the graph
--- Because the graph is directed, just because one node is connected to
--- another, doesn't mean that it will appear in the other node's connections
 deleteNode :: Eq a => DiGraph a -> a -> DiGraph a
 deleteNode graph startNode = AM.delete withoutNodeGraph startNode where
-    connectedNodes = AM.lookup graph startNode & Data.Maybe.fromJust
-    withoutNodeGraph = Data.List.foldl' (\graph' node -> deleteEdge graph' node startNode) graph connectedNodes
+    withoutNodeGraph = Data.List.foldl' (\graph' node -> deleteEdge graph' node startNode) graph (AM.parents graph)
