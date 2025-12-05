@@ -7,6 +7,7 @@ module Data.AssocMap (
     upsert,
     update,
     insert,
+    Data.AssocMap.lookup,
     ) where
 
 import Data.Maybe (fromJust)
@@ -41,7 +42,7 @@ member :: Eq k => k -> AssocMap k v -> Bool
 member key (AssocMap xs) = member' key xs
     where
         member' :: Eq a => a -> [(a, b)] -> Bool
-        member' element lst = maybe False (const True) (lookup element lst)
+        member' element lst = maybe False (const True) (Prelude.lookup element lst)
 
 alter :: Eq k => AssocMap k v -> (Maybe v -> Maybe v) -> k -> AssocMap k v
 alter (AssocMap graph) function key = AssocMap $ alter' function key graph
@@ -70,3 +71,11 @@ insert :: Eq k => AssocMap k v -> k -> v -> Maybe (AssocMap k v)
 insert graph key value = if key `member` graph
     then Nothing
     else Just $ alter graph (maybe (Just value) undefined) key
+
+lookup :: Eq k => AssocMap k v -> k -> Maybe v
+lookup (AssocMap graph) key = lookup' key graph
+    where
+        lookup' _ [] = Nothing
+        lookup' key' ((key'', value'):xs)
+            | key' == key'' = Just value'
+            | otherwise = lookup' key' xs
