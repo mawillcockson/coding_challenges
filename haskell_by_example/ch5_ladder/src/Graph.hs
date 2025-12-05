@@ -72,7 +72,9 @@ children graph key = AM.findWithDefault graph [] key
 deleteEdge :: Eq a => DiGraph a -> a -> a -> DiGraph a
 deleteEdge graph startNode endNode = AM.alter graph (aux) startNode where
     aux Nothing = Nothing
-    aux (Just [node]) = Nothing
+    aux (Just [node])
+        | node == endNode = Nothing
+        | otherwise = Just [node]
     aux (Just nodes) = Just $ nodes Data.List.\\ [endNode]
 
 deleteNode :: Eq a => DiGraph a -> a -> DiGraph a
