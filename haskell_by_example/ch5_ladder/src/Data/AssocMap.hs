@@ -8,9 +8,10 @@ module Data.AssocMap (
     update,
     insert,
     Data.AssocMap.lookup,
+    findWithDefault,
     ) where
 
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, fromMaybe)
 import Data.Function ((&))
 
 main :: IO ()
@@ -79,3 +80,6 @@ lookup (AssocMap graph) key = lookup' key graph
         lookup' key' ((key'', value'):xs)
             | key' == key'' = Just value'
             | otherwise = lookup' key' xs
+
+findWithDefault :: Eq k => AssocMap k v -> v -> k -> v
+findWithDefault graph defaultValue key = fromMaybe defaultValue (Data.AssocMap.lookup graph key)
