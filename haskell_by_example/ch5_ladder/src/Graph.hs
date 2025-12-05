@@ -69,10 +69,10 @@ buildDiGraph = Data.List.foldl' (addNode) (empty)
 children :: Eq a => DiGraph a -> a -> [a]
 children graph key = AM.findWithDefault graph [] key
 
--- BUG: If the last connection is removed, should remove empty nodes
 deleteEdge :: Eq a => DiGraph a -> a -> a -> DiGraph a
 deleteEdge graph startNode endNode = AM.alter graph (aux) startNode where
     aux Nothing = Nothing
+    aux (Just [node]) = Nothing
     aux (Just nodes) = Just $ nodes Data.List.\\ [endNode]
 
 -- BUG: actually need to remove node from every other node in the graph
