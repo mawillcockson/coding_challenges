@@ -45,14 +45,6 @@ newNode graph node
     | otherwise = AM.insert graph node [] & Data.Maybe.fromJust
 
 addEdge :: Eq a => DiGraph a -> (a, a) -> DiGraph a
-{-
-addEdge graph (startNode, endNode) =
-    let intermediateGraph = newNode graph startNode
-        connectedNodes = AM.lookup intermediateGraph startNode & Data.Maybe.fromJust
-        modifiedConnections = Data.List.union connectedNodes [endNode]
-        newGraph = AM.update intermediateGraph startNode modifiedConnections & Data.Maybe.fromJust
-    in newGraph
--}
 addEdge graph (startNode, endNode) = addNode graph (startNode, [endNode])
 
 addEdges :: Eq a => [(a, a)] -> DiGraph a -> DiGraph a
