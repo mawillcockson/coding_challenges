@@ -15,7 +15,7 @@ import qualified Data.AssocMap as AM
 import qualified Data.Maybe (fromJust)
 import Data.Function ((&))
 import qualified Data.Function (flip)
-import qualified Data.List (foldl', union, nub, (\\))
+import qualified Data.List (foldl', union, (\\))
 
 type DiGraph a = AM.AssocMap a [a]
 
@@ -24,7 +24,7 @@ main = do
     let addEdge' = Data.Function.flip addEdge
     putStrLn $ "addEdges [(1,1),(2,2)] -> " ++ (addEdges (empty :: DiGraph Int) [(1,1),(2,2)] & show)
     putStrLn $ "addEdges [(1,1),(2,2),(2,3),(3,3),(3,2)] -> " ++ (addEdges (empty :: DiGraph Int) [(1,1),(2,2),(2,3),(3,3),(3,2)] & show)
-    putStrLn $ "addEdge empty (1,1) & addEdge' (2,2) & addEdge' (2,3) & addEdge' (3,3) & addEdge' (3,2) -> " ++ (addEdge empty (1,1) & addEdge' (2,2) & addEdge' (2,3) & addEdge' (3,3) & addEdge' (3,2) & show)
+    putStrLn $ "addEdge empty (1,1) & addEdge' (2,2) & addEdge' (2,3) & addEdge' (3,3) & addEdge' (3,2) -> " ++ show (addEdge empty (1,1) & addEdge' (2,2) & addEdge' (2,3) & addEdge' (3,3) & addEdge' (3,2) :: DiGraph Int)
     putStrLn $ "buildDiGraph [(1,[1]),(2,[2,3]),(3,[3,2])] -> " ++ ((buildDiGraph [(1,[1]),(2,[2,3]),(3,[3,2])] :: DiGraph Int) & show)
     putStrLn $ "buildDiGraph [(1,[1]),(2,[2,3]),(3,[3,2]),(1,[2]),(2,[2,3,3,4,4]),(4,[4]),(5,[5])] -> " ++ ((buildDiGraph [(1,[1]),(2,[2,3]),(3,[3,2]),(1,[2]),(2,[2,3,3,4,4]),(4,[4]),(5,[5])] :: DiGraph Int) & show)
     let example = buildDiGraph [(1,[1]),(2,[2,3]),(3,[3,2]),(1,[2]),(2,[2,3,3,4,4]),(4,[4]),(5,[5])] :: DiGraph Int
