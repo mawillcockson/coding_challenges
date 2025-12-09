@@ -9,27 +9,28 @@ module Data.PermutationMap (
     Data.PermutationMap.lookup,
     findWithDefault,
     createPermutationMap,
-    ) where
+) where
 
 import qualified Data.AssocMap as AM (
     AssocMap,
-    empty,
-    member,
     alter,
-    upsert,
     delete,
+    empty,
+    findWithDefault,
     lookup,
-    findWithDefault,)
+    member,
+    upsert,
+ )
 import Data.Function ((&))
-import qualified Data.List (sort, union, foldl')
-import qualified Data.Text (toCaseFold, pack, unpack)
+import qualified Data.List (foldl', sort, union)
+import qualified Data.Text (pack, toCaseFold, unpack)
 
 main :: IO ()
 main = do
     let upsertF :: String -> [String] -> PermutationMap -> PermutationMap
         upsertF key value graph = upsert graph key value
         example :: PermutationMap
-        example = empty & upsertF "abc" ["acc","abb"] & upsertF "def" ["ddf"]
+        example = empty & upsertF "abc" ["acc", "abb"] & upsertF "def" ["ddf"]
         ups = upsert example
         del = delete example
     putStrLn $ "Example map: " ++ (show example)
