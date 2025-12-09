@@ -1,4 +1,5 @@
 module Main (main) where
+
 import qualified System.Environment
 
 main :: IO ()

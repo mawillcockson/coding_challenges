@@ -1,6 +1,6 @@
 module Main (main) where
 
---import Lib
+-- import Lib
 
 main :: IO ()
 main = putStrLn "Hello, World!"

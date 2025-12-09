@@ -11,12 +11,12 @@ module Data.AssocMap (
     Data.AssocMap.lookup,
     findWithDefault,
     parents,
-    ) where
+) where
 
-import Data.Maybe (fromJust, fromMaybe)
 import Data.Function ((&))
-import qualified Data.Tuple (fst)
 import qualified Data.List (unzip)
+import Data.Maybe (fromJust, fromMaybe)
+import qualified Data.Tuple (fst)
 
 main :: IO ()
 main = do
@@ -44,49 +44,51 @@ main = do
 newtype AssocMap k v = AssocMap [(k, v)]
     deriving (Show)
 
-member :: Eq k => k -> AssocMap k v -> Bool
+member :: (Eq k) => k -> AssocMap k v -> Bool
 member key (AssocMap xs) = member' key xs
-    where
-        member' :: Eq a => a -> [(a, b)] -> Bool
-        member' element lst = maybe False (const True) (Prelude.lookup element lst)
+  where
+    member' :: (Eq a) => a -> [(a, b)] -> Bool
+    member' element lst = maybe False (const True) (Prelude.lookup element lst)
 
-alter :: Eq k => AssocMap k v -> (Maybe v -> Maybe v) -> k -> AssocMap k v
+alter :: (Eq k) => AssocMap k v -> (Maybe v -> Maybe v) -> k -> AssocMap k v
 alter (AssocMap graph) function key = AssocMap $ alter' function key graph
-    where
-        alter' :: Eq k => (Maybe v -> Maybe v) -> k -> [(k, v)] -> [(k, v)]
-        alter' func key' [] = maybe ([]) (\value -> [(key', value)]) (func Nothing)
-        alter' func key' ((key'', value''):xs)
-            | key' == key'' = maybe (xs) (\newValue -> (key'', newValue) : xs) (func (Just value''))
-            | otherwise = (key'', value'') : (alter' func key' xs)
+  where
+    alter' :: (Eq k) => (Maybe v -> Maybe v) -> k -> [(k, v)] -> [(k, v)]
+    alter' func key' [] = maybe ([]) (\value -> [(key', value)]) (func Nothing)
+    alter' func key' ((key'', value'') : xs)
+        | key' == key'' = maybe (xs) (\newValue -> (key'', newValue) : xs) (func (Just value''))
+        | otherwise = (key'', value'') : (alter' func key' xs)
 
 empty :: AssocMap k v
 empty = AssocMap []
 
-delete :: Eq k => AssocMap k v -> k -> AssocMap k v
+delete :: (Eq k) => AssocMap k v -> k -> AssocMap k v
 delete graph key = alter graph (const Nothing) key
 
-upsert :: Eq k => AssocMap k v -> k -> v -> AssocMap k v
+upsert :: (Eq k) => AssocMap k v -> k -> v -> AssocMap k v
 upsert graph key value = alter graph (const $ Just value) key
 
-update :: Eq k => AssocMap k v -> k -> v -> Maybe (AssocMap k v)
-update graph key value = if key `member` graph
-    then Just $ alter graph (maybe undefined (const $ Just value)) key
-    else Nothing
+update :: (Eq k) => AssocMap k v -> k -> v -> Maybe (AssocMap k v)
+update graph key value =
+    if key `member` graph
+        then Just $ alter graph (maybe undefined (const $ Just value)) key
+        else Nothing
 
-insert :: Eq k => AssocMap k v -> k -> v -> Maybe (AssocMap k v)
-insert graph key value = if key `member` graph
-    then Nothing
-    else Just $ alter graph (maybe (Just value) undefined) key
+insert :: (Eq k) => AssocMap k v -> k -> v -> Maybe (AssocMap k v)
+insert graph key value =
+    if key `member` graph
+        then Nothing
+        else Just $ alter graph (maybe (Just value) undefined) key
 
-lookup :: Eq k => AssocMap k v -> k -> Maybe v
+lookup :: (Eq k) => AssocMap k v -> k -> Maybe v
 lookup (AssocMap graph) key = lookup' key graph
-    where
-        lookup' _ [] = Nothing
-        lookup' key' ((key'', value'):xs)
-            | key' == key'' = Just value'
-            | otherwise = lookup' key' xs
+  where
+    lookup' _ [] = Nothing
+    lookup' key' ((key'', value') : xs)
+        | key' == key'' = Just value'
+        | otherwise = lookup' key' xs
 
-findWithDefault :: Eq k => AssocMap k v -> v -> k -> v
+findWithDefault :: (Eq k) => AssocMap k v -> v -> k -> v
 findWithDefault graph defaultValue key = fromMaybe defaultValue (Data.AssocMap.lookup graph key)
 
 parents :: AssocMap k v -> [k]

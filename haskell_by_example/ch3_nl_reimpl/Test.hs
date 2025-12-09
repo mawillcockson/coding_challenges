@@ -1,6 +1,6 @@
 module Main where
 
-import Prelude (putStrLn, IO)
+import Prelude (IO, putStrLn)
 
 main :: IO ()
 main = putStrLn "Hello, World!"

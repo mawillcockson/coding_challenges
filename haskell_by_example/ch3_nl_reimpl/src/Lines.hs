@@ -1,6 +1,6 @@
 module Lines (example, lines, unlines, words, unwords) where
 
-import Prelude hiding (lines, unlines, words, unwords)
+import Prelude hiding (lines, unlines, unwords, words)
 
 example :: IO ()
 example = do
@@ -21,8 +21,8 @@ linesTest = do
 unlinesTest :: IO ()
 unlinesTest = do
     putStr "unlines [\"a\",\"b\",\"c\"] -> "
-    putStrLn $ unlines ["a","b","c"]
-    putStrLn $ "test: " ++ (unlines ["a","b","c"])
+    putStrLn $ unlines ["a", "b", "c"]
+    putStrLn $ "test: " ++ (unlines ["a", "b", "c"])
 
 wordsTest :: IO ()
 wordsTest = do
@@ -36,34 +36,34 @@ wordsTest = do
 unwordsTest :: IO ()
 unwordsTest = do
     putStr "unwords [\"a\",\"b\",\"c\"] -> "
-    putStrLn $ unwords ["a","b","c"]
-    putStrLn $ "test: " ++ (unwords ["a","b","c"])
+    putStrLn $ unwords ["a", "b", "c"]
+    putStrLn $ "test: " ++ (unwords ["a", "b", "c"])
 
 lines :: String -> [String]
 lines str =
     let aux :: [Char] -> String -> [String]
         aux word ['\n'] = [word]
         aux word [] = [word]
-        aux word (char:chars)
+        aux word (char : chars)
             | char == '\n' = word : (aux [] chars)
             | otherwise = aux (word ++ [char]) chars
-        in aux [] str
+     in aux [] str
 
 unlines :: [String] -> String
 unlines [] = ""
-unlines (lne:lnes) = lne ++ "\n" ++ (unlines lnes)
+unlines (lne : lnes) = lne ++ "\n" ++ (unlines lnes)
 
 words :: String -> [String]
 words str =
     let aux :: [Char] -> String -> [String]
-        aux word (char:chars)
+        aux word (char : chars)
             | char == ' ' && word == "" = aux word chars
             | char == ' ' = word : (aux [] chars)
             | otherwise = aux (word ++ [char]) chars
         aux "" [] = []
         aux word [] = [word]
-        in aux [] str
+     in aux [] str
 
 unwords :: [String] -> String
 unwords [] = ""
-unwords (lne:lnes) = lne ++ " " ++ (unwords lnes)
+unwords (lne : lnes) = lne ++ " " ++ (unwords lnes)

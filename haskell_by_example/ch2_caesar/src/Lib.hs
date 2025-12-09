@@ -1,5 +1,5 @@
-module Lib
-    ( square,
+module Lib (
+    square,
     Alphabet,
     lowerAlphabet,
     upperAlphabet,
@@ -27,7 +27,7 @@ module Lib
     showGuessedShift,
     worksForEveryShift,
     wrapAroundMod,
-    ) where
+) where
 
 square :: Int -> Int
 square x = x * x
@@ -60,38 +60,44 @@ isMisc character = not (
     || isDigit character
 )
 -}
-isMisc character = character `notElem` (
-    lowerAlphabet
-    ++ upperAlphabet
-    ++ digits)
+isMisc character =
+    character
+        `notElem` ( lowerAlphabet
+                        ++ upperAlphabet
+                        ++ digits
+                  )
 
 listLength :: [a] -> Int
 listLength [] = 0
-listLength (_:xs) = 1 + listLength xs
+listLength (_ : xs) = 1 + listLength xs
 
-indexOf :: Eq a => a -> [a] -> Int
-indexOf character (x : xs) = if x == character
-    then 0
-    else 1 + indexOf character xs
+indexOf :: (Eq a) => a -> [a] -> Int
+indexOf character (x : xs) =
+    if x == character
+        then 0
+        else 1 + indexOf character xs
 indexOf _ [] = undefined
 
 (!-!) :: [a] -> Int -> a
-(!-!) (x:_) 0 = x
-(!-!) (_:xs) index = if index < 0 then undefined else xs !-! (index - 1)
+(!-!) (x : _) 0 = x
+(!-!) (_ : xs) index = if index < 0 then undefined else xs !-! (index - 1)
 (!-!) [] _ = undefined
 
 rotateChar :: Int -> Char -> Char
-rotateChar offset character = if isUpper character
-    then upperAlphabet !-! (((character `indexOf` upperAlphabet) + offset) `mod` (listLength upperAlphabet))
-    else if isLower character
-        then lowerAlphabet !-! (((character `indexOf` lowerAlphabet) + offset) `mod` (listLength lowerAlphabet))
-        else if isDigit character
-            then digits !-! (((character `indexOf` digits) + offset) `mod` (listLength digits))
-            else character
+rotateChar offset character =
+    if isUpper character
+        then upperAlphabet !-! (((character `indexOf` upperAlphabet) + offset) `mod` (listLength upperAlphabet))
+        else
+            if isLower character
+                then lowerAlphabet !-! (((character `indexOf` lowerAlphabet) + offset) `mod` (listLength lowerAlphabet))
+                else
+                    if isDigit character
+                        then digits !-! (((character `indexOf` digits) + offset) `mod` (listLength digits))
+                        else character
 
 rotate :: Int -> String -> String
 rotate _ [] = []
-rotate offset (x:xs) = (rotateChar offset x) : (rotate offset xs)
+rotate offset (x : xs) = (rotateChar offset x) : (rotate offset xs)
 
 rotateWithAlphabet :: Alphabet -> Int -> Char -> Char
 rotateWithAlphabet alphabet offset character = alphabet !-! (((character `indexOf` alphabet) + offset) `mod` (listLength alphabet))
@@ -118,7 +124,8 @@ rot13 :: String -> String
 rot13 = caesar 13
 
 rot135 :: String -> String
-rot135 message = map (symmetricallyRotateByType) message where
+rot135 message = map (symmetricallyRotateByType) message
+  where
     symmetricallyRotateByType character
         | isUpper character = upperRot (halfLength upperAlphabet) character
         | isLower character = lowerRot (halfLength lowerAlphabet) character
@@ -127,16 +134,18 @@ rot135 message = map (symmetricallyRotateByType) message where
     halfLength :: [a] -> Int
     halfLength list = (listLength list) `div` 2
 
-count :: Eq a => a -> [a] -> Int
+count :: (Eq a) => a -> [a] -> Int
 count _ [] = 0
-count element (x:xs) = (if element == x then 1 else 0) + (count element xs)
+count element (x : xs) = (if element == x then 1 else 0) + (count element xs)
 
 letterFrequency :: Alphabet -> String -> [Double]
-letterFrequency alphabet string = map (\char -> fromIntegral (count char string) / total) alphabet where
+letterFrequency alphabet string = map (\char -> fromIntegral (count char string) / total) alphabet
+  where
     total = fromIntegral (listLength string)
 
 guessShift :: String -> Int
-guessShift message = maybeEIndex - eIndex where
+guessShift message = maybeEIndex - eIndex
+  where
     eIndex = 'e' `indexOf` lowerAlphabet
     maybeEIndex = mostCommonLetter `indexOf` lowerAlphabet
     mostCommonLetter = lowerAlphabet !-! mostCommonLetterIndex
@@ -147,11 +156,13 @@ guessShift message = maybeEIndex - eIndex where
 showGuessedShift :: String -> String
 showGuessedShift encoded = caesar (-(guessShift encoded)) encoded
 
-wrapAroundMod :: Integral a => a -> a -> a
-wrapAroundMod num modulus = if remainder < 0 then remainder + modulus else remainder where
+wrapAroundMod :: (Integral a) => a -> a -> a
+wrapAroundMod num modulus = if remainder < 0 then remainder + modulus else remainder
+  where
     remainder = num `mod` modulus
 
 worksForEveryShift :: (String -> Int) -> String -> Bool
-worksForEveryShift guesser message = all (\x -> x == True) shiftsThatGuessCorrectly where
-    shiftsThatGuessCorrectly = [(guesser (caesar shift message)) `wrapAroundMod` 26 == shift | shift <- [0..shiftMax]]
+worksForEveryShift guesser message = all (\x -> x == True) shiftsThatGuessCorrectly
+  where
+    shiftsThatGuessCorrectly = [(guesser (caesar shift message)) `wrapAroundMod` 26 == shift | shift <- [0 .. shiftMax]]
     shiftMax = (listLength lowerAlphabet) - 1

@@ -9,7 +9,7 @@ module Graph (
     buildDiGraph,
     deleteEdge,
     deleteNode,
-    ) where
+) where
 
 import qualified Data.AssocMap as AM
 import qualified Data.Maybe (fromJust)
