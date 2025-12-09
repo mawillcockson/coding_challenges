@@ -9,6 +9,7 @@ import qualified Data.Char (isLowerCase)
 import Data.Function ((&))
 import qualified Data.List
 import qualified Data.PermutationMap as PM
+import Debug.Trace (traceShowId)
 import qualified Graph as G
 
 type Dictionary = [String]
@@ -16,6 +17,7 @@ type Dictionary = [String]
 main :: IO ()
 main = do
     putStrLn $ "V1 -> " ++ (makeDictionary "reacted\ncreated\neat\nate\ntea\nPlato\nJohn\njohn" & unlines)
+    putStrLn $ mkLadderGraph (words "cat cats act dog") & show
 
 -- putStrLn $ "V2 -> " ++ (makeDictionaryV2 "reacted\ncreated\neat\nate\ntea\nPlato\nJohn\njohn" & unlines)
 
