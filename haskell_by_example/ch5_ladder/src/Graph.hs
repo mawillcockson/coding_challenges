@@ -1,5 +1,6 @@
 module Graph (
     main,
+    DiGraph,
     hasNode,
     newNode,
     addEdge,
