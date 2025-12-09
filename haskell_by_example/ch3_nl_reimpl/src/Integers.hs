@@ -13,6 +13,7 @@ example = do
 f :: Integer -> Integer
 f 1 = 5
 f 3 = 10
-f x | x <= 0 = -1
+f x
+    | x <= 0 = -1
     | x > 4 = 20
 f 4 = 20
