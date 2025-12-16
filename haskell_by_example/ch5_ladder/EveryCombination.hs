@@ -1,0 +1,91 @@
+module EveryCombination (main) where
+
+import Data.Function ((&))
+import qualified Data.List
+
+letterAtPos :: Int -> Int -> Char -> [String]
+letterAtPos remaining position letter
+    | remaining <= 0 = []
+    | remaining == position = [letter] : letterAtPos (remaining - 1) position letter
+    | otherwise = [] : letterAtPos (remaining - 1) position letter
+
+letterAtPosV2 :: Char -> Int -> [String] -> [String]
+letterAtPosV2 letter position lst
+    | position <= 0 = lst
+    | otherwise =
+        let len = Data.List.length lst
+            fromLeft = len - position
+         in if position > len then lst else go letter fromLeft lst
+  where
+    go :: Char -> Int -> [String] -> [String]
+    go _letter _pos' [] = []
+    go letter' pos' (string : strings)
+        | pos' == 0 = (string ++ [letter']) : go letter' (pos' - 1) strings
+        | otherwise = string : go letter' (pos' - 1) strings
+
+appendAt :: a -> Int -> [[a]] -> [[a]]
+appendAt letter position lst
+    | position <= 0 = lst
+    | otherwise =
+        let len = Data.List.length lst
+            fromLeft = len - position
+         in if position > len then lst else go letter fromLeft lst
+  where
+    go :: a -> Int -> [[a]] -> [[a]]
+    go _letter _pos' [] = []
+    go letter' pos' (string : strings)
+        | pos' == 0 = (string ++ [letter']) : go letter' (pos' - 1) strings
+        | otherwise = string : go letter' (pos' - 1) strings
+
+data Side = Left' | Right'
+
+alternate :: [a] -> [a] -> [a]
+alternate left right = go Left' left right
+  where
+    go :: Side -> [a] -> [a] -> [a]
+    go _side [] right' = right'
+    go Left' (left' : lefts) rights = left' : go Right' lefts rights
+    go Right' lefts (right' : rights) = right' : go Left' lefts rights
+    go _side left' [] = left'
+
+addEveryLetter :: [Char] -> String -> [String]
+addEveryLetter letters string = (string :) $ go letters string & Data.List.concat
+  where
+    len = Data.List.length string
+    explode :: [String]
+    explode = map (\c -> [c]) string
+    empty :: [String]
+    empty = Data.List.replicate (len + 1) ""
+    go :: String -> String -> [[String]]
+    go [] _string = []
+    go (letter : letters') string' =
+        let insertions = [appendAt letter pos empty | pos <- [1 .. len + 1]]
+            assemble :: [String] -> String
+            assemble insertion = alternate insertion explode & Data.List.concat
+         in (map (assemble) insertions) : go letters' string'
+
+permuteAdd :: [Char] -> Int -> String -> [String]
+permuteAdd letters count string
+    | count < 0 = undefined
+    | count == 0 = [string]
+    | otherwise = permuteAdd letters (count - 1) string & map (addEveryLetter letters) & Data.List.concat
+
+lowerCaseLetters :: [Char]
+lowerCaseLetters = "abcdefghijklmnopqrstuvwxyz"
+
+permuteAddLowercase :: Int -> String -> [String]
+permuteAddLowercase = permuteAdd lowerCaseLetters
+
+main :: IO ()
+main = do
+    putStrLn . show $ letterAtPos 3 1 'a'
+    putStrLn . show $ letterAtPos 3 2 'a'
+    putStrLn . show $ letterAtPos 3 3 'a'
+    putStrLn . show $ ["a", "", ""] & 'b' `letterAtPosV2` 3 & 'c' `letterAtPosV2` 3
+    putStrLn . show $ ["a", "", ""] & 'a' `letterAtPosV2` 4 & 'b' `letterAtPosV2` 3 & 'c' `letterAtPosV2` 3 & 'd' `letterAtPosV2` 2 & 'e' `letterAtPosV2` 2 & 'f' `letterAtPosV2` 1 & 'g' `letterAtPosV2` 0
+    putStrLn . show $ ["a", "", ""] & 'a' `appendAt` 4 & 'b' `appendAt` 3 & 'c' `appendAt` 3 & 'd' `appendAt` 2 & 'e' `appendAt` 2 & 'f' `appendAt` 1 & 'g' `appendAt` 0
+    putStrLn . show $ addEveryLetter lowerCaseLetters "abc"
+    putStrLn . show $ Data.List.length $ addEveryLetter lowerCaseLetters "abc" & map (addEveryLetter lowerCaseLetters) & Data.List.concat
+    -- putStrLn . show $ Data.List.length $ addEveryLetter lowerCaseLetters "abc" & map (addEveryLetter lowerCaseLetters) & Data.List.concat & map (addEveryLetter lowerCaseLetters) & Data.List.concat
+    putStrLn . show $ Data.List.length $ permuteAddLowercase 2 "abc"
+    putStrLn . show $ permuteAddLowercase 2 "abc"
