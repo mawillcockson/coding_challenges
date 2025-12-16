@@ -76,6 +76,28 @@ lowerCaseLetters = "abcdefghijklmnopqrstuvwxyz"
 permuteAddLowercase :: Int -> String -> [String]
 permuteAddLowercase = permuteAdd lowerCaseLetters
 
+replaceAt :: a -> Int -> [a] -> [a]
+replaceAt letter position lst
+    | position < 0 = lst
+    | otherwise =
+        let len = Data.List.length lst
+            fromLeft = (len - 1) - position
+         in if position > len then lst else go letter fromLeft lst
+  where
+    go :: a -> Int -> [a] -> [a]
+    go _newX _pos' [] = []
+    go newX pos' (x : xs)
+        | pos' == 0 = newX : go newX (pos' - 1) xs
+        | otherwise = x : go newX (pos' - 1) xs
+
+swapEveryLetter :: [Char] -> String -> [String]
+swapEveryLetter letters string = (string :) $ go letters & Data.List.concat
+  where
+    len = Data.List.length string
+    go :: String -> [[String]]
+    go [] = []
+    go (letter : letters') = [replaceAt letter pos string | pos <- [0 .. len - 1]] : go letters'
+
 main :: IO ()
 main = do
     print $ letterAtPos 3 1 'a'
@@ -88,4 +110,6 @@ main = do
     print $ Data.List.length $ addEveryLetter lowerCaseLetters "abc" & map (addEveryLetter lowerCaseLetters) & Data.List.concat
     -- print $ Data.List.length $ addEveryLetter lowerCaseLetters "abc" & map (addEveryLetter lowerCaseLetters) & Data.List.concat & map (addEveryLetter lowerCaseLetters) & Data.List.concat
     print $ Data.List.length $ permuteAddLowercase 2 "abc"
-    print $ permuteAddLowercase 2 "abc"
+    -- print $ permuteAddLowercase 2 "abc"
+    print $ "abc" & 'z' `replaceAt` 0 & 'x' `replaceAt` 2
+    print $ swapEveryLetter lowerCaseLetters "abc"
