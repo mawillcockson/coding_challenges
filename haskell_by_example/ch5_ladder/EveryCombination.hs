@@ -78,14 +78,14 @@ permuteAddLowercase = permuteAdd lowerCaseLetters
 
 main :: IO ()
 main = do
-    putStrLn . show $ letterAtPos 3 1 'a'
-    putStrLn . show $ letterAtPos 3 2 'a'
-    putStrLn . show $ letterAtPos 3 3 'a'
-    putStrLn . show $ ["a", "", ""] & 'b' `letterAtPosV2` 3 & 'c' `letterAtPosV2` 3
-    putStrLn . show $ ["a", "", ""] & 'a' `letterAtPosV2` 4 & 'b' `letterAtPosV2` 3 & 'c' `letterAtPosV2` 3 & 'd' `letterAtPosV2` 2 & 'e' `letterAtPosV2` 2 & 'f' `letterAtPosV2` 1 & 'g' `letterAtPosV2` 0
-    putStrLn . show $ ["a", "", ""] & 'a' `appendAt` 4 & 'b' `appendAt` 3 & 'c' `appendAt` 3 & 'd' `appendAt` 2 & 'e' `appendAt` 2 & 'f' `appendAt` 1 & 'g' `appendAt` 0
-    putStrLn . show $ addEveryLetter lowerCaseLetters "abc"
-    putStrLn . show $ Data.List.length $ addEveryLetter lowerCaseLetters "abc" & map (addEveryLetter lowerCaseLetters) & Data.List.concat
-    -- putStrLn . show $ Data.List.length $ addEveryLetter lowerCaseLetters "abc" & map (addEveryLetter lowerCaseLetters) & Data.List.concat & map (addEveryLetter lowerCaseLetters) & Data.List.concat
-    putStrLn . show $ Data.List.length $ permuteAddLowercase 2 "abc"
-    putStrLn . show $ permuteAddLowercase 2 "abc"
+    print $ letterAtPos 3 1 'a'
+    print $ letterAtPos 3 2 'a'
+    print $ letterAtPos 3 3 'a'
+    print $ ["a", "", ""] & 'b' `letterAtPosV2` 3 & 'c' `letterAtPosV2` 3
+    print $ ["a", "", ""] & 'a' `letterAtPosV2` 4 & 'b' `letterAtPosV2` 3 & 'c' `letterAtPosV2` 3 & 'd' `letterAtPosV2` 2 & 'e' `letterAtPosV2` 2 & 'f' `letterAtPosV2` 1 & 'g' `letterAtPosV2` 0
+    print $ ["a", "", ""] & 'a' `appendAt` 4 & 'b' `appendAt` 3 & 'c' `appendAt` 3 & 'd' `appendAt` 2 & 'e' `appendAt` 2 & 'f' `appendAt` 1 & 'g' `appendAt` 0
+    print $ addEveryLetter lowerCaseLetters "abc"
+    print $ Data.List.length $ addEveryLetter lowerCaseLetters "abc" & map (addEveryLetter lowerCaseLetters) & Data.List.concat
+    -- print $ Data.List.length $ addEveryLetter lowerCaseLetters "abc" & map (addEveryLetter lowerCaseLetters) & Data.List.concat & map (addEveryLetter lowerCaseLetters) & Data.List.concat
+    print $ Data.List.length $ permuteAddLowercase 2 "abc"
+    print $ permuteAddLowercase 2 "abc"
