@@ -1,5 +1,5 @@
 module Data.AssocMap (
-    main,
+    test,
     AssocMap,
     member,
     alter,
@@ -18,8 +18,8 @@ import qualified Data.List (unzip)
 import Data.Maybe (fromJust, fromMaybe)
 import qualified Data.Tuple (fst)
 
-main :: IO ()
-main = do
+test :: IO ()
+test = do
     let insertF key value graph = fromJust $ insert graph key value
         example :: AssocMap Int Int
         example = empty & insertF 1 1 & insertF 2 2

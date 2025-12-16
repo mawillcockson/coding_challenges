@@ -1,5 +1,5 @@
 module Data.PermutationMap (
-    main,
+    test,
     PermutationMap,
     empty,
     member,
@@ -25,8 +25,8 @@ import Data.Function ((&))
 import qualified Data.List (foldl', sort, union)
 import qualified Data.Text (pack, toCaseFold, unpack)
 
-main :: IO ()
-main = do
+test :: IO ()
+test = do
     let upsertF :: String -> [String] -> PermutationMap -> PermutationMap
         upsertF key value graph = upsert graph key value
         example :: PermutationMap

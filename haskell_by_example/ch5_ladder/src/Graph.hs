@@ -1,5 +1,5 @@
 module Graph (
-    main,
+    test,
     DiGraph,
     hasNode,
     newNode,
@@ -20,8 +20,8 @@ import qualified Data.Maybe (fromJust)
 
 type DiGraph a = AM.AssocMap a [a]
 
-main :: IO ()
-main = do
+test :: IO ()
+test = do
     let addEdge' = Data.Function.flip addEdge
     putStrLn $ "addEdges [(1,1),(2,2)] -> " ++ (addEdges (empty :: DiGraph Int) [(1, 1), (2, 2)] & show)
     putStrLn $ "addEdges [(1,1),(2,2),(2,3),(3,3),(3,2)] -> " ++ (addEdges (empty :: DiGraph Int) [(1, 1), (2, 2), (2, 3), (3, 3), (3, 2)] & show)

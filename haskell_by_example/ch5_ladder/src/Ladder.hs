@@ -1,5 +1,5 @@
 module Ladder (
-    main,
+    test,
     Dictionary,
     readDictionary,
     -- readDictionaryV2,
@@ -14,8 +14,8 @@ import qualified Graph as G
 
 type Dictionary = [String]
 
-main :: IO ()
-main = do
+test :: IO ()
+test = do
     putStrLn $ "V1 -> " ++ (makeDictionary "reacted\ncreated\neat\nate\ntea\nPlato\nJohn\njohn" & unlines)
     putStrLn $ mkLadderGraph (words "cat cats act dog") & show
 
