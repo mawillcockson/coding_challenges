@@ -100,28 +100,46 @@ computeCandidatesV2 dictionary word = Data.List.delete word candidates
     allSwaps word letter =
 -}
 
-appendAt :: a -> Int -> [[a]] -> [[a]]
-appendAt letter position lst
-    | position <= 0 = lst
-    | otherwise =
-        let len = Data.List.length lst
-            fromLeft = len - position
-         in if position > len then lst else go letter fromLeft lst
+alternate :: [a] -> [a] -> [a]
+alternate left right = go Left' left right
   where
-    go :: a -> Int -> [[a]] -> [[a]]
-    go _letter _pos' [] = []
-    go letter pos' (string : strings)
-        | pos' == 0 = (string ++ [letter]) : go letter (pos' - 1) strings
-        | otherwise = string : go letter (pos' - 1) strings
+    go :: Side -> [a] -> [a] -> [a]
+    go _side [] right' = right'
+    go Left' (left' : lefts) rights = left' : go Right' lefts rights
+    go Right' lefts (right' : rights) = right' : go Left' lefts rights
+    go _side left' [] = left'
+
+addEveryLetter :: [Char] -> String -> [String]
+addEveryLetter letters string = (string :) $ go letters string & Data.List.concat
+  where
+    len = Data.List.length string
+    explode :: [String]
+    explode = map (\c -> [c]) string
+    empty :: [String]
+    empty = Data.List.replicate (len + 1) ""
+    go :: String -> String -> [[String]]
+    go [] _string = []
+    go (letter : letters') string' =
+        let insertions = [appendAt letter pos empty | pos <- [1 .. len + 1]]
+            assemble :: [String] -> String
+            assemble insertion = alternate insertion explode & Data.List.concat
+         in (map (assemble) insertions) : go letters' string'
+
+permuteAdd :: [Char] -> Int -> String -> [String]
+permuteAdd letters count string
+    | count < 0 = undefined
+    | count == 0 = [string]
+    | otherwise = permuteAdd letters (count - 1) string & map (addEveryLetter letters) & Data.List.concat
+
+lowerCaseLetters :: [Char]
+lowerCaseLetters = "abcdefghijklmnopqrstuvwxyz"
+
+permuteAddLowercase :: Int -> String -> [String]
+permuteAddLowercase = permuteAdd lowerCaseLetters
 
 permute :: SingleMoveTransformation -> String -> [String]
 permute Reorder word = [Data.List.sort word]
-permute (Add n) word =
-    let len = Data.List.length word
-        splits = [Data.List.splitAt x word | x <- [0 .. len]]
-        insertAtEveryPos letter = map (insertLetter letter) splits
-        insertLetter letter (left, right) = Data.List.concat [left, [letter], right]
-     in Data.List.concatMap (insertAtEveryPos) lowerCaseLetters
+permute (Add n) word = permuteAddLowercase n word
 permute (Remove n) word =
     let len = Data.List.length word
         drop1Right (left, right) = Data.List.concat [left, Data.List.drop 1 right]
