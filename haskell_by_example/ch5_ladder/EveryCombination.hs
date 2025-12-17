@@ -2,7 +2,7 @@ module EveryCombination (main) where
 
 import Data.Function ((&))
 import qualified Data.List
-import Data.Maybe (mapMaybe)
+import Data.Maybe (catMaybes)
 
 letterAtPos :: Int -> Int -> Char -> [String]
 letterAtPos remaining position letter
@@ -102,6 +102,9 @@ swapEveryLetter letters string = (string :) $ go letters & Data.List.concat
 data Carrier a
     = Replaced a
     | Original a
+    deriving (Show)
+
+type Swaps a = [Carrier a]
 
 extract :: Carrier a -> a
 extract (Replaced a) = a
@@ -110,40 +113,58 @@ extract (Original a) = a
 extractAll :: [Carrier a] -> [a]
 extractAll = map (extract)
 
-permuteSwap :: [Char] -> Int -> String -> [String]
-permuteSwap letters count string = map (extractAll) $ go letters count
+{- much simpler version available
+enumerate :: [a] -> [(Int, a)]
+enumerate lst = go 0 lst
   where
-    chars :: [Carrier Char]
+    go :: Int -> [a] -> [(Int, a)]
+    go _i [] = []
+    go i (x : xs) = (i, x) : (go (i + 1) xs)
+-}
+
+enumerate :: [a] -> [(Int, a)]
+enumerate = zip [0 ..]
+
+maybeReplaceAt :: (Eq a) => a -> Int -> Swaps a -> Maybe (Swaps a)
+maybeReplaceAt replacement position lst
+    | position < 0 = undefined
+    | otherwise =
+        let len' = Data.List.length lst
+            fromLeft = (len' - 1) - position
+         in if position >= len'
+                then undefined
+                else aux replacement fromLeft lst []
+  where
+    aux :: (Eq a) => a -> Int -> Swaps a -> Swaps a -> Maybe (Swaps a)
+    aux _replacement _pos [] newLst = Just $ Data.List.reverse newLst
+    aux replacement' 0 (x : xs) newLst = case x of
+        Replaced _a -> Nothing
+        Original a ->
+            if a == replacement'
+                then Nothing
+                else aux replacement' (0 - 1) xs ((Replaced replacement') : newLst)
+    aux replacement' pos (x : xs) newLst = aux replacement' (pos - 1) xs (x : newLst)
+
+swapEveryPlace :: (Eq a) => a -> Swaps a -> [Swaps a]
+swapEveryPlace letter string' = Data.Maybe.catMaybes $ [maybeReplaceAt letter pos string' | pos <- [0 .. (len - 1)]]
+  where
+    len = Data.List.length string'
+
+makeReplacements :: [Char] -> Swaps Char -> [Swaps Char]
+makeReplacements letters' string' = concatMap (flip swapEveryPlace $ string') letters'
+
+permuteSwap :: [Char] -> Int -> String -> [String]
+permuteSwap letters count string = string : (map (extractAll) $ go count)
+  where
+    chars :: Swaps Char
     chars = map (Original) string
     len = Data.List.length chars
 
-    maybeReplaceAt :: (Eq a) => a -> Int -> [Carrier a] -> Maybe [Carrier a]
-    maybeReplaceAt replacement position lst
-        | position < 0 = undefined
-        | otherwise =
-            let len = Data.List.length lst
-             in if position >= len
-                    then undefined
-                    else aux replacement position lst []
-      where
-        aux :: (Eq a) => a -> Int -> [Carrier a] -> [Carrier a] -> Maybe [Carrier a]
-        aux _replacement _pos [] newLst = Just newLst
-        aux replacement' 0 (x : xs) newLst = case x of
-            Replaced _a -> Nothing
-            Original a ->
-                if a == replacement'
-                    then Nothing
-                    else aux replacement' (0 - 1) xs ((Replaced replacement') : newLst)
-        aux replacement' pos (x : xs) newLst = aux replacement' pos xs (x : newLst)
-
-    makeReplacements :: Char -> [Carrier Char] -> [[Carrier Char]]
-    makeReplacements letter' string' = mapMaybe (\pos -> maybeReplaceAt letter' pos string') [0 .. len - 1]
-
-    go :: [Char] -> Int -> [[Carrier Char]]
-    go (letter : letters') count'
+    go :: Int -> [Swaps Char]
+    go count'
         | count' < 0 = undefined
         | count' == 0 = [chars]
-        | otherwise = go letters (count - 1) & map (makeReplacements letter) & Data.List.concat
+        | otherwise = go (count - 1) & map (makeReplacements letters) & Data.List.concat
 
 main :: IO ()
 main = do
@@ -159,14 +180,17 @@ main = do
     print $ Data.List.length $ permuteAddLowercase 2 "abc"
     -- print $ permuteAddLowercase 2 "abc"
     print $ "abc" & 'z' `replaceAt` 0 & 'x' `replaceAt` 2
-    let swaps = swapEveryLetter lowerCaseLetters "abc"
-    print swaps
-    putStrLn $ "-> " ++ (show $ Data.List.length swaps)
-    putStrLn $ "& nub -> " ++ (show $ Data.List.nub swaps & Data.List.length)
-    let newSwaps = permuteSwap lowerCaseLetters 1 "abc"
-    print newSwaps
-    putStrLn $ "-> " ++ (show $ Data.List.length newSwaps)
-    putStrLn $ "& nub -> " ++ (show $ Data.List.nub newSwaps & Data.List.length)
+    let example = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+        swaps = swapEveryLetter lowerCaseLetters example
+    -- print swaps
+    putStrLn $ "swaps -> " ++ (show $ Data.List.length swaps)
+    putStrLn $ "swaps & nub -> " ++ (show $ Data.List.nub swaps & Data.List.length)
+    let newSwaps = permuteSwap lowerCaseLetters 1 example
+    -- print newSwaps
+    putStrLn $ "newSwaps -> " ++ (show $ Data.List.length newSwaps)
+    putStrLn $ "newSwaps & nub -> " ++ (show $ Data.List.nub newSwaps & Data.List.length)
+    putStrLn $ "maybeReplaceAt 'z' 2 $ map (Original) abc -> " ++ (show $ maybeReplaceAt 'z' 2 $ map (Original) "abc")
+    putStrLn $ "maybeReplaceAt 'a' 2 [Original c | c <- abc] -> " ++ (show $ maybeReplaceAt 'a' 2 [Original c | c <- "abc"])
+    putStrLn $ "extractAll . catMaybes $ [maybeReplaceAt 'z' pos abc | pos <- [0 .. len - 1]] -> " ++ (show $ catMaybes $ [maybeReplaceAt 'z' pos (map (Original) "abc") | pos <- [0 .. 3 - 1]])
     putStrLn $ "swapEveryLetter 2 letters abc & nub -> " ++ (swapEveryLetter lowerCaseLetters "abc" & map (swapEveryLetter lowerCaseLetters) & Data.List.concat & Data.List.nub & Data.List.length & show)
-
--- putStrLn $ "permuteSwap lowerCaseLetters 2 abc -> " ++ (permuteSwap lowerCaseLetters 2 "abc" & Data.List.length & show)
+    -- putStrLn $ "permuteSwap lowerCaseLetters 2 abc -> " ++ (permuteSwap lowerCaseLetters 2 "abc" & Data.List.length & show)
