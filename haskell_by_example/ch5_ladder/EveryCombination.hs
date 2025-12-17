@@ -1,6 +1,7 @@
 module EveryCombination (main) where
 
 import Data.Function ((&))
+import Data.List ((!?))
 import qualified Data.List
 import Data.Maybe (catMaybes)
 
@@ -107,6 +108,9 @@ data Carrier a
 type Replaced a = [Carrier a]
 type ReplacedString = [Carrier Char]
 
+carry :: [a] -> Replaced a
+carry = map (Original)
+
 extractChar :: Carrier a -> a
 extractChar (Replaced a) = a
 extractChar (Original a) = a
@@ -157,6 +161,7 @@ allSwappingsOfLetter letter string = Data.Maybe.catMaybes $ [maybeReplaceAt lett
 allSwappings :: [Char] -> ReplacedString -> [ReplacedString]
 allSwappings letters string = concatMap (flip allSwappingsOfLetter $ string) letters
 
+{-
 permuteSwap :: [Char] -> Int -> String -> [String]
 permuteSwap letters count string = string : (extractAllStrings $ go count)
   where
@@ -168,6 +173,24 @@ permuteSwap letters count string = string : (extractAllStrings $ go count)
         | count' < 0 = undefined
         | count' == 0 = [chars]
         | otherwise = go (count' - 1) & map (allSwappings letters) & Data.List.concat
+-}
+
+swapAllWith :: [Char] -> ReplacedString -> [ReplacedString]
+swapAllWith letters replacedString =
+    [ (take pos replacedString) ++ [Replaced letter] ++ (drop (pos + 1) replacedString)
+    | (pos, Original c) <- enumerate replacedString
+    , letter <- letters
+    , c /= letter
+    ]
+
+permuteSwap :: [Char] -> Int -> String -> [String]
+permuteSwap letters swapCount string = extractAllStrings $ concat $ go swapCount [original]
+  where
+    original :: ReplacedString
+    original = carry string
+
+    go :: Int -> [ReplacedString] -> [[ReplacedString]]
+    go count = take count . iterate (\xs -> [original] ++ (map (swapAllWith letters) xs & concat))
 
 main :: IO ()
 main = do
@@ -183,11 +206,15 @@ main = do
     print $ Data.List.length $ permuteAddLowercase 2 "abc"
     -- print $ permuteAddLowercase 2 "abc"
     print $ "abc" & 'z' `replaceAt` 0 & 'x' `replaceAt` 2
-    let example = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+    let example = "abc"
         swaps = swapEveryLetter lowerCaseLetters example
-    -- print swaps
+        otherSwaps = swapAllWith lowerCaseLetters (carry example) & extractAllStrings
+    print swaps
+    print otherSwaps
     putStrLn $ "swaps -> " ++ (show $ Data.List.length swaps)
     putStrLn $ "swaps & nub -> " ++ (show $ Data.List.nub swaps & Data.List.length)
+    putStrLn $ "otherSwaps -> " ++ (show $ Data.List.length otherSwaps)
+    putStrLn $ "otherSwaps & nub -> " ++ (show $ Data.List.nub otherSwaps & Data.List.length)
     let newSwaps = permuteSwap lowerCaseLetters 1 example
     -- print newSwaps
     putStrLn $ "newSwaps -> " ++ (show $ Data.List.length newSwaps)
@@ -204,3 +231,6 @@ main = do
     putStrLn $ "permuteSwap lowerCaseLetters 2 ab -> " ++ (twoSwap & Data.List.length & show)
     putStrLn $ "permuteSwap lowerCaseLetters 2 ab & nub -> " ++ (twoSwap & Data.List.nub & Data.List.length & show)
     putStrLn $ "26 ^ 2 -> " ++ (show $ 26 ** 2 & round)
+    print $ permuteSwap "cd" 1 "ab"
+    print $ permuteSwap "cd" 2 "ab"
+    print $ swapAllWith lowerCaseLetters (carry "abc") & map (swapAllWith lowerCaseLetters) & (++ [[carry "abc"]]) & concat & extractAllStrings & Data.List.length
