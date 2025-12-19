@@ -103,7 +103,7 @@ swapEveryLetter letters string = (string :) $ go letters & Data.List.concat
 data Carrier a
     = Replaced a
     | Original a
-    deriving (Show)
+    deriving (Show, Eq)
 
 type Replaced a = [Carrier a]
 type ReplacedString = [Carrier Char]
@@ -183,14 +183,18 @@ swapAllWith letters replacedString =
     , c /= letter
     ]
 
+-- NOTE::BUG This still does extra work, and produces duplicates
 permuteSwap :: [Char] -> Int -> String -> [String]
-permuteSwap letters swapCount string = extractAllStrings $ concat $ go swapCount [original]
+permuteSwap letters swapCount string = extractAllStrings $ go swapCount
   where
     original :: ReplacedString
     original = carry string
 
-    go :: Int -> [ReplacedString] -> [[ReplacedString]]
-    go count = take count . iterate (\xs -> [original] ++ (map (swapAllWith letters) xs & concat))
+    go :: Int -> [ReplacedString]
+    go 1 = original : swapAllWith letters original
+    go count
+        | count < 0 = [original]
+        | otherwise = original : concat (map (swapAllWith letters) $ go $ count - 1)
 
 main :: IO ()
 main = do
@@ -212,25 +216,28 @@ main = do
     print swaps
     print otherSwaps
     putStrLn $ "swaps -> " ++ (show $ Data.List.length swaps)
-    putStrLn $ "swaps & nub -> " ++ (show $ Data.List.nub swaps & Data.List.length)
+    -- putStrLn $ "swaps & nub -> " ++ (show $ Data.List.nub swaps & Data.List.length)
     putStrLn $ "otherSwaps -> " ++ (show $ Data.List.length otherSwaps)
-    putStrLn $ "otherSwaps & nub -> " ++ (show $ Data.List.nub otherSwaps & Data.List.length)
+    -- putStrLn $ "otherSwaps & nub -> " ++ (show $ Data.List.nub otherSwaps & Data.List.length)
     let newSwaps = permuteSwap lowerCaseLetters 1 example
     -- print newSwaps
     putStrLn $ "newSwaps -> " ++ (show $ Data.List.length newSwaps)
-    putStrLn $ "newSwaps & nub -> " ++ (show $ Data.List.nub newSwaps & Data.List.length)
+    -- putStrLn $ "newSwaps & nub -> " ++ (show $ Data.List.nub newSwaps & Data.List.length)
     putStrLn $ "maybeReplaceAt 'z' 2 $ map (Original) abc -> " ++ (show $ maybeReplaceAt 'z' 2 $ map (Original) "abc")
     putStrLn $ "maybeReplaceAt 'a' 2 [Original c | c <- abc] -> " ++ (show $ maybeReplaceAt 'a' 2 [Original c | c <- "abc"])
     putStrLn $ "catMaybes $ [maybeReplaceAt 'z' pos abc | pos <- [0 .. len - 1]] -> " ++ (show $ catMaybes $ [maybeReplaceAt 'z' pos (map (Original) "abc") | pos <- [0 .. 3 - 1]])
-    putStrLn $ "swapEveryLetter 2 letters abc & nub -> " ++ (swapEveryLetter lowerCaseLetters "abc" & map (swapEveryLetter lowerCaseLetters) & Data.List.concat & Data.List.nub & Data.List.length & show)
+    -- putStrLn $ "swapEveryLetter 2 letters abc & nub -> " ++ (swapEveryLetter lowerCaseLetters "abc" & map (swapEveryLetter lowerCaseLetters) & Data.List.concat & Data.List.nub & Data.List.length & show)
     putStrLn $ "permuteSwap lowerCaseLetters 2 abc -> " ++ (permuteSwap lowerCaseLetters 2 "abc" & Data.List.length & show)
     let twoSwap = swapEveryLetter lowerCaseLetters "ab" & map (swapEveryLetter lowerCaseLetters) & Data.List.concat
     putStrLn $ "swapEveryLetter 2 letters ab -> " ++ (twoSwap & Data.List.length & show)
-    putStrLn $ "swapEveryLetter 2 letters ab & nub -> " ++ (twoSwap & Data.List.nub & Data.List.length & show)
+    -- putStrLn $ "swapEveryLetter 2 letters ab & nub -> " ++ (twoSwap & Data.List.nub & Data.List.length & show)
     let twoSwap = permuteSwap lowerCaseLetters 2 "ab"
     putStrLn $ "permuteSwap lowerCaseLetters 2 ab -> " ++ (twoSwap & Data.List.length & show)
-    putStrLn $ "permuteSwap lowerCaseLetters 2 ab & nub -> " ++ (twoSwap & Data.List.nub & Data.List.length & show)
+    -- putStrLn $ "permuteSwap lowerCaseLetters 2 ab & nub -> " ++ (twoSwap & Data.List.nub & Data.List.length & show)
     putStrLn $ "26 ^ 2 -> " ++ (show $ 26 ** 2 & round)
-    print $ permuteSwap "cd" 1 "ab"
-    print $ permuteSwap "cd" 2 "ab"
+    print $ permuteSwap "+=" 1 "ab"
+    print $ permuteSwap "+=" 2 "ab"
     print $ swapAllWith lowerCaseLetters (carry "abc") & map (swapAllWith lowerCaseLetters) & (++ [[carry "abc"]]) & concat & extractAllStrings & Data.List.length
+    print $ swapAllWith "+=" (carry "ab")
+    print $ swapAllWith "+=" (carry "ab") & map (swapAllWith "#@") & concat
+    print $ swapAllWith "+=" (carry "ab") & map (swapAllWith "+=") & concat

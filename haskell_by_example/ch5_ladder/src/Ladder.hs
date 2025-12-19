@@ -137,6 +137,50 @@ lowerCaseLetters = "abcdefghijklmnopqrstuvwxyz"
 permuteAddLowercase :: Int -> String -> [String]
 permuteAddLowercase = permuteAdd lowerCaseLetters
 
+data Carrier a
+    = Replaced a
+    | Original a
+    deriving (Show, Eq)
+
+enumerate :: [a] -> [(Int, a)]
+enumerate = zip [0 ..]
+
+type Replaced a = [Carrier a]
+type ReplacedString = [Carrier Char]
+
+carry :: [a] -> Replaced a
+carry = map (Original)
+
+extractChar :: Carrier a -> a
+extractChar (Replaced a) = a
+extractChar (Original a) = a
+
+extractString :: [Carrier a] -> [a]
+extractString = map (extractChar)
+
+extractAllStrings :: [[Carrier a]] -> [[a]]
+extractAllStrings = map (extractString)
+
+swapAllWith :: [Char] -> ReplacedString -> [ReplacedString]
+swapAllWith letters replacedString =
+    [ (take pos replacedString) ++ [Replaced letter] ++ (drop (pos + 1) replacedString)
+    | (pos, Original c) <- enumerate replacedString
+    , letter <- letters
+    , c /= letter
+    ]
+
+permuteSwap :: [Char] -> Int -> String -> [String]
+permuteSwap letters swapCount string = extractAllStrings $ go swapCount
+  where
+    original :: ReplacedString
+    original = carry string
+
+    go :: Int -> [ReplacedString]
+    go 1 = original : swapAllWith letters original
+    go count
+        | count < 0 = [original]
+        | otherwise = original : concat (map (swapAllWith letters) $ go $ count - 1)
+
 permute :: SingleMoveTransformation -> String -> [String]
 permute Reorder word = [Data.List.sort word]
 permute (Add n) word = permuteAddLowercase n word
@@ -144,10 +188,4 @@ permute (Remove n) word =
     let len = Data.List.length word
         drop1Right (left, right) = Data.List.concat [left, Data.List.drop 1 right]
      in [drop1Right $ Data.List.splitAt x word | x <- [0 .. (len - 1)]]
-permute (Swap n) word =
-    let len = Data.List.length word
-        splits = [Data.List.splitAt x word | x <- [0 .. (len - 1)]]
-        swap1Right letter (left, (_ : rest)) = Just $ Data.List.concat [left, letter : rest]
-        swap1Right _letter (_left, []) = Nothing
-        swapAtEveryPos letter = Data.Maybe.mapMaybe (swap1Right letter) splits
-     in Data.List.concatMap (swapAtEveryPos) lowerCaseLetters
+permute (Swap n) word = permuteSwap lowerCaseLetters n word
