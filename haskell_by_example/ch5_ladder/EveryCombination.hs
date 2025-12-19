@@ -196,6 +196,23 @@ permuteSwap letters swapCount string = extractAllStrings $ go swapCount
         | count < 0 = [original]
         | otherwise = original : concat (map (swapAllWith letters) $ go $ count - 1)
 
+permuteRemove :: Int -> String -> [String]
+permuteRemove removeCount string =
+    let result = go removeCount
+     in (fst result) ++ (snd result)
+  where
+    go :: Int -> ([String], [String])
+    go count
+        | count <= 0 = ([], [string])
+        | otherwise =
+            let (overPreviousStep, previousStep) = go (count - 1)
+             in ( overPreviousStep ++ previousStep
+                , [ (take pos word) ++ (drop (pos + 1) word)
+                  | word <- previousStep
+                  , pos <- [0 .. (Data.List.length word) - 1]
+                  ]
+                )
+
 main :: IO ()
 main = do
     print $ letterAtPos 3 1 'a'
@@ -241,3 +258,5 @@ main = do
     print $ swapAllWith "+=" (carry "ab")
     print $ swapAllWith "+=" (carry "ab") & map (swapAllWith "#@") & concat
     print $ swapAllWith "+=" (carry "ab") & map (swapAllWith "+=") & concat
+    print $ permuteRemove 1 "abc"
+    print $ permuteRemove 2 "abc"
