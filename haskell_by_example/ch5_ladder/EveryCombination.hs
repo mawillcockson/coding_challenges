@@ -1,4 +1,4 @@
-module EveryCombination (main) where
+module EveryCombination (main, swapEveryLetter, permuteSwap) where
 
 import Data.Function ((&))
 import Data.List ((!?))
@@ -197,21 +197,37 @@ permuteSwap letters swapCount string = extractAllStrings $ go swapCount
         | otherwise = original : concat (map (swapAllWith letters) $ go $ count - 1)
 
 permuteRemove :: Int -> String -> [String]
-permuteRemove removeCount string =
-    let result = go removeCount
-     in (fst result) ++ (snd result)
+permuteRemove removeCount string = go removeCount
   where
-    go :: Int -> ([String], [String])
+    go :: Int -> [String]
     go count
-        | count <= 0 = ([], [string])
+        | count <= 0 = [string, []]
         | otherwise =
-            let (overPreviousStep, previousStep) = go (count - 1)
-             in ( overPreviousStep ++ previousStep
-                , [ (take pos word) ++ (drop (pos + 1) word)
-                  | word <- previousStep
-                  , pos <- [0 .. (Data.List.length word) - 1]
-                  ]
-                )
+            let previousStep = go (count - 1)
+             in [ (take pos word) ++ (drop (pos + 1) word)
+                | word <- maybe [] (fst) $ Data.List.unsnoc $ go $ count - 1
+                , pos <- [0 .. (Data.List.length word)]
+                ]
+
+permutations :: [a] -> [[a]]
+permutations lst =
+    let len = Data.List.length lst
+     in if len <= 1
+            then [lst]
+            else
+                [ (take i perm) ++ (take 1 lst) ++ (drop i perm)
+                | perm <- permutations $ drop 1 lst
+                , i <- [0 .. len - 1]
+                ]
+
+permutations' :: [a] -> [[a]]
+permutations' lst = [] : (go lst)
+  where
+    go :: [a] -> [[a]]
+    go [] = []
+    go (x : xs) = [x] : (foldr f [] $ go xs)
+      where
+        f ys r = ys : (x : ys) : r
 
 main :: IO ()
 main = do
@@ -260,3 +276,5 @@ main = do
     print $ swapAllWith "+=" (carry "ab") & map (swapAllWith "+=") & concat
     print $ permuteRemove 1 "abc"
     print $ permuteRemove 2 "abc"
+    print $ permutations "abc"
+    print $ permutations' "abc"
