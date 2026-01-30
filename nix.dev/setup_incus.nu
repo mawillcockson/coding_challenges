@@ -71,7 +71,7 @@ def main [
         incus image list $remote --format json |
         from json
     }
-    let nixos_images = {|| do $images | where properties.os =~ '(?i)^nixos$'}
+    let nixos_images = {|| do $images | where properties.os like '(?i)^nixos$'}
     if (do $nixos_images | is-not-empty) and $delete_images {
         log warning 'removing nixos images'
         incus image delete ...(
@@ -89,7 +89,7 @@ def main [
                 $'($remote_name):($it.fingerprint)'
             }
         )
-    } else {
+    } else if (do $nixos_images | is-empty) {
         log info 'downloading new nixos image'
         incus image copy $'images:nixos/($nixos_version)' $remote --copy-aliases
     }
@@ -124,9 +124,7 @@ def main [
     } else {
         log info $'creating instance ($instance)'
         let most_recent_image = (
-            incus image list $remote --format json |
-            from json |
-            where properties.os like '(?i)^nixos$' |
+            do $nixos_images |
             sort-by --reverse {get created_at | into datetime} |
             first
         )
