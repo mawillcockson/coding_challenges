@@ -57,13 +57,14 @@ def main [
 ]: [nothing -> nothing] {
     log debug $'we will (if $delete_images {""} else {"not "})remove every NixOS image'
     log debug $'we will (if $delete_instance {""} else {"not "})remove every instance names nixos'
+    log debug $'we will (if $refresh_images {""} else {"not "})refresh all nixos images'
 
     let instances = {||
         incus list $remote --format json |
         from json
     }
     if ((do $instances) | where name == 'nixos' | is-not-empty) and $delete_instance {
-        log info 'deletion of current instance requested'
+        log info $'deleting instance: ($instance)'
         incus delete --force $instance
     }
     let images = (
