@@ -190,8 +190,13 @@ def "create-or-update profiles" []: [nothing -> nothing] {
 }
 
 def "stop instance" [inst: string]: [nothing -> nothing] {
+    if (incus list $inst --format json | from json | is-empty) {
+        log info $'instance does not exist, no need to stop: ($inst)'
+        return null
+    }
     let instance_status = {||
         incus list $inst --format json |
+        from json |
         first |
         get state.status_code |
         into int
