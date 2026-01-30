@@ -67,12 +67,12 @@ def main [
         log info $'deleting instance: ($instance)'
         incus delete --force $instance
     }
-    let images = (
+    let images = {||
         incus image list $remote --format json |
         from json
-    )
-    let nixos_images = ($images | where properties.os =~ '(?i)^nixos$')
-    if ($nixos_images | is-not-empty) and $delete_images {
+    }
+    let nixos_images = {|| do $images | where properties.os =~ '(?i)^nixos$'}
+    if (do $nixos_images | is-not-empty) and $delete_images {
         log warning 'removing nixos images'
         incus image delete ...(
             $nixos_images |
@@ -81,7 +81,7 @@ def main [
             }
         )
     }
-    if ($nixos_images | is-not-empty) and $refresh_images {
+    if (do $nixos_images | is-not-empty) and $refresh_images {
         log info 'refreshing all nixos images'
         incus image refresh ...(
             $nixos_images |
@@ -151,7 +151,7 @@ def "create-or-update profiles" []: [nothing -> nothing] {
         transpose name value |
         each {|it| $it.value | merge {name: $it.name}}
     )
-    let needs_updating = {|it: record|
+    let needs_updating = {|it|
         let expected = (
             $expected_profiles |
             where {|ij| $ij.name == $it.name} |
