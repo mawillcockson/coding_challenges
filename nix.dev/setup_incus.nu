@@ -150,12 +150,13 @@ def "create-or-update profiles" []: [nothing -> nothing] {
         each {|it| $it.value | merge {name: $it.name}}
     )
     let needs_updating = {|it|
+        let profile = $it
         let expected = (
             $expected_profiles |
-            where {|ij| $ij.name == $it.name} |
+            where {|ij| $ij.name == $profile.name} |
             first
         )
-        ($it | to nuon) != ($it | merge $expected | to nuon)
+        ($profile | to nuon) != ($profile | merge $expected | to nuon)
     }
     log info 'checking if any profiles are being used by any instances other than ones named "nixos", and would need to be updated...'
     let profiles = (
