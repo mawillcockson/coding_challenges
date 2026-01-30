@@ -75,7 +75,7 @@ def main [
     if (do $nixos_images | is-not-empty) and $delete_images {
         log warning 'removing nixos images'
         incus image delete ...(
-            $nixos_images |
+            do $nixos_images |
             each {|it|
                 $'($remote_name):($it.fingerprint)'
             }
@@ -84,7 +84,7 @@ def main [
     if (do $nixos_images | is-not-empty) and $refresh_images {
         log info 'refreshing all nixos images'
         incus image refresh ...(
-            $nixos_images |
+            do $nixos_images |
             each {|it|
                 $'($remote_name):($it.fingerprint)'
             }
