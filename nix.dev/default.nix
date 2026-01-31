@@ -7,7 +7,8 @@ let
   }] "nixpkgs";
   */
   # this is an equivalent way
-  nixpkgs = fetchTarball "channel:nixos-25.11";
+  # nixpkgs = fetchTarball "channel:nixos-25.11";
+  nixpkgs = fetchTarball (import ./default-nixpkgs-url.nix);
   pkgs = import nixpkgs {
     config = {};
     overlays = [];
