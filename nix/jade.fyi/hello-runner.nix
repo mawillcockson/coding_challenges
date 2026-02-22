@@ -2,7 +2,7 @@
   hello-wrapper,
   stdenvNoCC,
 }:
-stdenvNoCC.mkDerviation {
+stdenvNoCC.mkDerivation {
   pname = "hello-runner";
   version = "0.0.0";
   builder = ''
