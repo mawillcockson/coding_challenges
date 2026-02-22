@@ -9,16 +9,12 @@
     self,
     nixpkgs,
   }: {
-    packages.x86_64-linux.hello-wrapper =
-      nixpkgs.legacyPackages.x86_64-linux.callPackage ./hello-wrapper.nix
-      {};
-    packages.x86_64-linux.hello-wrapper-traditional =
-      self.packages.x86_64-linux.hello-wrapper.override
-      {
+    packages.x86_64-linux = nixpkgs.lib.makeScope nixpkgs.legacyPackages.x86_64-linux.newScope (self': {
+      hello-wrapper = self'.callPackage ./hello-wrapper.nix {};
+      hello-wrapper-traditional = self.hello-wrapper.override {
         traditionalGreeting = true;
       };
-    packages.x86_64-linux.hello-runner =
-      nixpkgs.legacyPackages.x86_64-linux.callPackage ./hello-runner
-      {};
+      hello-runner = self'.callPackage ./hello-runner.nix {};
+    });
   };
 }
