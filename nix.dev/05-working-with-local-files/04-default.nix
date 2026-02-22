@@ -16,4 +16,4 @@ let
     inherit system;
   };
 in
-pkgs.callPackage ./02-build.nix { }
+pkgs.callPackage ./04-build.nix { }

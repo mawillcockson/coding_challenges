@@ -1,7 +1,7 @@
 { stdenv, lib }:
 let
   fs = lib.fileset;
-  sourceFiles = ./hello.txt;
+  sourceFiles = fs.difference ./. ./result;
 in
 fs.trace sourceFiles
 
@@ -14,6 +14,6 @@ fs.trace sourceFiles
     };
     postInstall = ''
       mkdir "$out"
-      cp -v hello.txt "$out"
+      cp -v {hello,world}.txt "$out"
     '';
   }
