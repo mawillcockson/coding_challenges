@@ -1,0 +1,17 @@
+diff --git a/nix/store/7bn5sj8lvj8fgnzmvsaxmglcvmg97h1y-map.sh/bin/map.sh b/map.sh
+old mode 100755
+new mode 100644
+index fa2b57d7d451c413e79d6c42faa441f7cc345aed..e0ebf737e1514db2e86b2349b8f524a9eff13acd
+--- a/nix/store/7bn5sj8lvj8fgnzmvsaxmglcvmg97h1y-map.sh/bin/map.sh
++++ b/map.sh
+@@ -10,9 +10,9 @@ set -euo pipefail
+ 
+ keyFile=${XDG_DATA_HOME:-~/.local/share}/google-api/key
+ 
+ if [[ ! -f "$keyFile" ]]; then
+-    mkdir -p "$(basename "$keyFile")"
++    mkdir -p "$(dirname "$keyFile")"
+     echo "No Google API key found in $keyFile" >&2
+     echo "For getting one, see https://developers.google.com/maps/documentation/maps-static/start#before-you-begin" >&2
+     exit 1
+ fi
