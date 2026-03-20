@@ -7,9 +7,14 @@ NIX_CONFIG='extra-experimental-features = nix-command flakes pipe-operators
 allow-import-from-derivation = false'
 export NIX_CONFIG
 
+log() {
+    printf '%s %s\n' "--INFO--" "$*"
+}
 cleanup() {
+    log 'running cleanup'
     trap - EXIT QUIT TERM
 }
 trap cleanup EXIT QUIT TERM
 set -x
 nix flake check
+set +x
