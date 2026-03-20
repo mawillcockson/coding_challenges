@@ -36,7 +36,7 @@
         };
         checks = {
           default = self'.checks.hello;
-          hello = pkgs.callPackage ./helloTest.nix {inherit self nixpkgs system;};
+          hello = pkgs.callPackage ./helloTest.nix {inherit self self';};
         };
       };
       flake = {

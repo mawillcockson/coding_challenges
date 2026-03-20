@@ -1,4 +1,5 @@
 {
+  self',
   config,
   lib,
   pkgs,
@@ -34,8 +35,7 @@ in {
       };
       serviceConfig = {
         Type = "exec";
-        #ExecStart = "${builtins.trace (builtins.attrNames config) self'.packages.helloNixosTests}/bin/hello-nixos-tests";
-        ExecStart = "/bin/false";
+        ExecStart = "${self'.packages.helloNixosTests}/bin/hello-nixos-tests";
         User = "hello";
         Group = "hello";
         Restart = "on-failure";

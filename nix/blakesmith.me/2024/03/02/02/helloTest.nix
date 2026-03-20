@@ -1,5 +1,6 @@
 {
   self,
+  self',
   pkgs,
   ...
 }:
@@ -7,7 +8,12 @@ pkgs.testers.runNixOSTest {
   name = "hello-boots";
   nodes.machine = {...}: {
     imports = [
-      self.nixosModules.hello
+      (
+        {...}: {
+          _module.args = {inherit self';};
+          imports = [self.nixosModules.hello];
+        }
+      )
     ];
     services.helloNixosTests.enable = true;
 
