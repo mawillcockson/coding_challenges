@@ -28,6 +28,10 @@ in {
       description = "helloNixosTests server";
       after = ["network.target"];
       wantedBy = ["multi-user.target"];
+      unitConfig = {
+        StartLimitIntervalSec = "3sec";
+        StartLimitBurst = 3;
+      };
       serviceConfig = {
         Type = "exec";
         #ExecStart = "${builtins.trace (builtins.attrNames config) self'.packages.helloNixosTests}/bin/hello-nixos-tests";
