@@ -15,6 +15,8 @@ cleanup() {
     trap - EXIT QUIT TERM
 }
 trap cleanup EXIT QUIT TERM
+
 set -x
 nix flake check
+nix run .#checks.x86_64-linux.hello.driverInteractive
 set +x
