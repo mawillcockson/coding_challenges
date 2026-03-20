@@ -29,8 +29,8 @@ in {
       after = ["network.target"];
       wantedBy = ["multi-user.target"];
       unitConfig = {
-        StartLimitIntervalSec = "3sec";
-        StartLimitBurst = 3;
+        StartLimitIntervalSec = "10sec";
+        StartLimitBurst = 1;
       };
       serviceConfig = {
         Type = "exec";
