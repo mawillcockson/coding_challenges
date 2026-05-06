@@ -65,6 +65,7 @@ const tests = () => {
   }
 };
 
-if (import.meta.url.endsWith("rotate_strings.js")) {
+// not running in leetcode?
+if (globalThis["__filename"] === undefined) {
   tests();
 }
