@@ -40,6 +40,11 @@ int main(void) {
 
     double dollarsPerBook = 1;
     do {
-        readCount = scanf("%lf", dollarsPerBook);
+        readCount = scanf("%lf", &dollarsPerBook);
+        if (readCount == EOF) return 1;
+    } while (readCount < 1);
+
+    printf("%d", ((int) (money / dollarsPerBook)));
+
     return 0;
 }
