@@ -38,10 +38,10 @@ Warning: You will be graded on your output, so do not include any print
 statements that prompt a user for input.
 */
 
-const int tinuviel =   1; // 2**0
-const int calaelen =   2; // 2**1
-const int falarion =   4; // 2**2
-const int dorthonion = 8; // 2**3
+#define TINUVIEL   1 // 2**0
+#define CALAELEN   2 // 2**1
+#define FALARION   4 // 2**2
+#define DORTHONION 8 // 2**3
 
 int main(void) {
     int height = 0;
@@ -52,22 +52,22 @@ int main(void) {
         if (ret == EOF) return 1;
     }
     
-    int treeType = tinuviel + calaelen + falarion + dorthonion;
+    int treeType = TINUVIEL + CALAELEN + FALARION + DORTHONION;
 
-    if (height > 5) treeType ^= tinuviel;
-    if (height > 8) treeType ^= falarion;
-    if (height < 10) treeType ^= calaelen;
-    if (height < 12) treeType ^= dorthonion;
-    if (leaflets < 8) treeType ^= tinuviel;
-    if (leaflets < 10) treeType ^= calaelen;
-    if (leaflets > 5) treeType ^= falarion;
-    if (leaflets > 7) treeType ^= dorthonion;
+    if (height > 5) treeType ^= TINUVIEL;
+    if (height > 8) treeType ^= FALARION;
+    if (height < 10) treeType ^= CALAELEN;
+    if (height < 12) treeType ^= DORTHONION;
+    if (leaflets < 8) treeType ^= TINUVIEL;
+    if (leaflets < 10) treeType ^= CALAELEN;
+    if (leaflets > 5) treeType ^= FALARION;
+    if (leaflets > 7) treeType ^= DORTHONION;
 
     switch (treeType) {
-        case tinuviel: puts("Tinuviel"); return 0;
-        case calaelen: puts("Calaelen"); return 0;
-        case falarion: puts("Falarion"); return 0;
-        case dorthonion: puts("Dorthonion"); return 0;
+        case TINUVIEL: puts("Tinuviel"); return 0;
+        case CALAELEN: puts("Calaelen"); return 0;
+        case FALARION: puts("Falarion"); return 0;
+        case DORTHONION: puts("Dorthonion"); return 0;
         default: puts("Unknown"); return 0;
     }
 }
