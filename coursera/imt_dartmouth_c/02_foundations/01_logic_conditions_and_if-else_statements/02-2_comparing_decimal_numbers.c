@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 /*
 You decide to bet on the final match of the Tug of War National Championship. 
@@ -49,43 +48,35 @@ Warning: You will be graded on your output, so do not include any print
 statements that prompt a user for input.
 */
 
-void checkScanfRet(int ret) {
-    if (ret == EOF) exit(1);
-}
-
 int main(void) {
     int members = 0;
     int ret = 0;
-    while (ret < 1) {
+    //while (ret < 1) {
         ret = scanf("%d", &members);
-        checkScanfRet(ret);
-    }
+        //if (ret == EOF) return 1;
+    //}
 
     int team1MemberWeight = 0;
     int team2MemberWeight = 0;
     int team1TotalWeight = 0;
     int team2TotalWeight = 0;
     for (int i = members; i > 0; --i) {
-        ret = scanf("%d", &team1MemberWeight);
-        checkScanfRet(ret);
-        team1TotalWeight += team1MemberWeight;
+        //ret = scanf("%d", &team1MemberWeight);
+        //if (ret == EOF) return 1;
+        //ret = scanf("%d", &team2MemberWeight);
+        //if (ret == EOF) return 1;
+        scanf("%d %d", &team1MemberWeight, &team2MemberWeight);
 
-        ret = scanf("%d", &team2MemberWeight);
-        checkScanfRet(ret);
+        team1TotalWeight += team1MemberWeight;
         team2TotalWeight += team2MemberWeight;
     }
 
-    if (team1TotalWeight == team2TotalWeight) {
-        puts("Neither team has an advantage");
-    } else {
+    //if (team1TotalWeight == team2TotalWeight) {
+        //puts("Neither team has an advantage");
+    //} else {
         printf("Team %c has an advantage\n", team1TotalWeight > team2TotalWeight ? '1' : '2');
-    }
-    printf(
-            "Total weight for team 1: %d\n"
-            "Total weight for team 2: %d\n",
-            team1TotalWeight,
-            team2TotalWeight
-    );
+    //}
+    printf("Total weight for team 1: %d\nTotal weight for team 2: %d\n", team1TotalWeight, team2TotalWeight);
 
     return 0;
 }
