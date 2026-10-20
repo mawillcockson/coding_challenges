@@ -54,20 +54,20 @@ int main(void) {
     
     int treeType = TINUVIEL + CALAELEN + FALARION + DORTHONION;
 
-    if (height > 5) treeType ^= TINUVIEL;
-    if (height > 8) treeType ^= FALARION;
-    if (height < 10) treeType ^= CALAELEN;
-    if (height < 12) treeType ^= DORTHONION;
-    if (leaflets < 8) treeType ^= TINUVIEL;
-    if (leaflets < 10) treeType ^= CALAELEN;
-    if (leaflets > 5) treeType ^= FALARION;
-    if (leaflets > 7) treeType ^= DORTHONION;
+    if (height > 5) treeType &= ~TINUVIEL;
+    if (height > 8) treeType &= ~FALARION;
+    if (height < 10) treeType &= ~CALAELEN;
+    if (height < 12) treeType &= ~DORTHONION;
+    if (leaflets < 8) treeType &= ~TINUVIEL;
+    if (leaflets < 10) treeType &= ~CALAELEN;
+    if (leaflets > 5) treeType &= ~FALARION;
+    if (leaflets > 7) treeType &= ~DORTHONION;
 
     switch (treeType) {
         case TINUVIEL: puts("Tinuviel"); return 0;
         case CALAELEN: puts("Calaelen"); return 0;
         case FALARION: puts("Falarion"); return 0;
         case DORTHONION: puts("Dorthonion"); return 0;
-        default: puts("Unknown"); return 0;
+        default: puts("Uncertain"); return 0;
     }
 }
