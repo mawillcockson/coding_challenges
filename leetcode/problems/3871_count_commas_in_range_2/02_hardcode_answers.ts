@@ -74,6 +74,7 @@ export const commasAtNumbers = new Map<number, number>([
   [999_999, 999_000],
   [999_999_999, 1_998_999_000],
   [999_999_999_999, 2_998_998_999_000],
+  [999_999_999_999_999, 3_998_998_998_999_000],
 ]);
 
 export function countCommas(n: number): number {
@@ -120,9 +121,14 @@ function occurences(substring: string, str: string): number {
   return count;
 }
 
+// a log10() of anything larger than this returns an incorrect result, probably
+// due to floating point imprecision
+const MAX_PRECISION_LOG10 = pow(10, 15) - 3;
+
 /** count total commas in all numbers from 1 to n
  */
 export function commaCount(n: number): number {
+  if (n > MAX_PRECISION_LOG10) return referenceCommaCount(n);
   const magnitude = log10(n);
   //if (magnitude <= 2) return 0;
   //if (3 <= magnitude && magnitude <= n) return n;
