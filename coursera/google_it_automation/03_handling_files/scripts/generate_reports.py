@@ -2,8 +2,9 @@
 import csv
 import sys
 from collections import Counter
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Final, Iterable
+from typing import Final
 
 RUN_COUNT_FILEPATH: Final = Path("/tmp/generate_report_runs.txt")
 
