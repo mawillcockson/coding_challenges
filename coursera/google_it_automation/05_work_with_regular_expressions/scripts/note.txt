@@ -1,0 +1,1 @@
+I greatly dislike that the contents of the script appears to be checked. I haven't tested if any deviation is possible, but the deviations I attempted are not.

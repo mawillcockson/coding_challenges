@@ -1,0 +1,7 @@
+Issues:
+1) Unlike previous lab, no progress checks for each function.
+2) Poor email regex: `[\w\.-]@` is fine for examples, yes, but then the domain is inserted without escaping, allowing matches like `email@abcdedu`
+3) Using python's `r'` string prefix when it's not needed (e.g. in the empty string `r''` preceding the `old_domain` pattern) teaches students to thing of it as the "regex indicator".
+4) Yet more use of unescaped arbitrary strings; `re.escape()` is specifically included for inserting arbitrary text into a pattern.
+5) Why manually add a space to the CSV output? There's much easier ways to give legitimate reason to manipulate strings.
+6) Deviations from the script are not allowed, and the output does not suggest that the contents of the script file (as opposed to its output or function) is the cause of the failure.
