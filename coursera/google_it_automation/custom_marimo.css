@@ -1,0 +1,49 @@
+@property --clr-code-grey {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: oklch(from lightgrey calc(l + 0.1) c h / alpha);
+}
+
+:scope {
+  --clr-code-grey: oklch(from lightgrey calc(l + 0.1) c h / alpha);
+  --clr-code-insert: oklch(from var(--clr-code-grey) l 0.0418 141.62);
+  --clr-code-delete: oklch(from var(--clr-code-insert) l 0.0418 36.43);
+}
+
+.paragraph ins {
+  text-decoration: double underline green;
+}
+
+.paragraph del {
+  text-decoration: solid line-through red;
+}
+
+.markdown.prose :not(pre) > code,
+code:is(.insertion, .deletion),
+.code-insertion,
+.code-deletion {
+  background-color: var(--clr-code-grey);
+  padding-block: 0.2em;
+  padding-inline: 0.4em;
+  border-radius: 2px;
+}
+
+.markdown.prose :is(ins, del):has(code) {
+  text-decoration: none;
+}
+
+.markdown.prose ins code,
+code.insertion,
+.code-insertion {
+  background-color: var(--clr-code-insert);
+}
+
+.markdown.prose del code,
+code.deletion,
+.code-deletion {
+  background-color: var(--clr-code-delete);
+}
+
+.red {
+  color: red;
+}
