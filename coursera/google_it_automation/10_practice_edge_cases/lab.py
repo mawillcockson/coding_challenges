@@ -221,7 +221,7 @@ def systemexit_error(RUN_1: Final, unittest):
 
     # this line is to create an explicit dependency between cells, so that marimo runs them in a specific order
     RUN_2: Final = RUN_1 + 1
-    return
+    return (RUN_2,)
 
 
 @app.cell(hide_code=True)
@@ -243,25 +243,24 @@ def _(ins_, note, rep_):
 
 
 @app.cell
-def _(unittest):
+def _(RUN_2: Final, unittest):
     _ = unittest.main(argv=["first-arg-is-ignored"], exit=False)
-    return
+
+    # this line is to create an explicit dependency between cells, so that marimo runs them in a specific order
+    RUN_3: Final = RUN_2 + 1
+    return (RUN_3,)
 
 
-@app.cell
-def _(rep_):
+@app.cell(hide_code=True)
+def _(note, rep_):
     mo.md(f"""
     Did your {rep_("automatic", "unit")} test pass? Was {rep_("**OK**", "`OK`")} the result? If not, go back to your {rep_("automatic", "unit")} test code and make sure you filled in the blanks correctly. If your {rep_("automatic", "unit")} test passed, great! You have successfully filled in the gaps to create {rep_("an automatic", "a unit")} test that verifies {rep_("whether input strings have the correct list of string matches", "the function under test can produce the expected matches for certain strings")}.
 
     This is great work so far, but your {rep_("automatic", "unit")} test includes only one test case. You need to make it grow. You can feed in more strings as test cases to {rep_("test whether your code works in the general case", "gain more confidence your function works in the general case")}. But you should also see what happens when you give it some input that you might not expect it to run into under normal operations.
 
-    Edge cases are inputs to code that produce unexpected results, and are found at the extreme ends of the ranges of input we imagine problems will typically work with. Can you use the cell below to write some edge cases? We've already filled in another test case for you! As it is, this test will run fine. Can you come up with at least one test case that you think could result in a wrong return value? {rep_("No wrong answers! Feel free to play around", "Give it your best shot")}!
-    """)
-    return
+    Edge cases are inputs to code that produce unexpected results, and are found at the extreme ends of the ranges of input we imagine problems will typically work with. Can you use the cell below to write some edge cases? We've already filled in another test case for you!
 
-
-@app.cell
-def _(LetterCompiler, unittest):
+    ```python
     class TestCompiler2(unittest.TestCase):
 
         def test_two(self):
@@ -272,23 +271,50 @@ def _(LetterCompiler, unittest):
     # EDGE CASES HERE
 
     unittest.main(argv = ['first-arg-is-ignored'], exit = False)
+    ```
+
+    {note("The above snippet uses the old function name, and won't work, so here's a version that's been updated to reflect those changes, give more useful names to items, and move the edge cases to their own suite:")}
+
+    ```python
+    class MoreHappyPath(unittest.TestCase):
+        "more tests for compile_letters()"
+
+        def test_capital_single(self) -> None:
+            result = compile_letters(
+                "A b c d e f g h i j k l m n o p q r s t u v w x y z"
+            )
+            self.assertEqual(result, ["b", "c"])
+
+    class EdgeCases(unittest.TestCase):
+        "these should fail"
+
+        def test_edge_case(self) -> None:
+            "explanation of edge case here"
+            # implementation here
+            pass
+
+    unittest.main(argv=["python"], exit=False)
+    ```
+
+    As it is, this test will run fine. Can you come up with at least one test case that you think could result in a wrong return value? {rep_("No wrong answers! Feel free to play around", "Give it your best shot")}!
+    """)
     return
 
 
 @app.cell(hide_code=True)
-def _(del_, ins_, rep_):
+def _(del_, note, rep_):
     mo.md(f"""
     Did you find any edge cases? If not, continue working on it. Choosing test cases can be an exercise in creativity. Coming up with different ways {del_("a ")}code might break {rep_("can be", "is")} super fun!
 
     If you are out of ideas: Try removing the spaces and figure out why they were in the example testcase. Does that give you an idea for other tests? When you have found at least one edge case, you are all done with this notebook.
 
-    {ins_("If we update the code to reflect the new function name, and add some edge cases, separated out into their own class, we get the following:")}
+    {note("I've added the edge cases I've found:", title="Solution")}
     """)
     return
 
 
 @app.cell
-def _(compile_letters, unittest):
+def _(RUN_3: Final, compile_letters, unittest):
     class MoreHappyPath(unittest.TestCase):
         "more tests for copmile_letters()"
 
@@ -309,7 +335,7 @@ def _(compile_letters, unittest):
             """
             result = compile_letters("a\ufdd0")
             self.assertEqual(result, [])
-
+ 
         def test_overlap(self) -> None:
             """
             if the aim of the function is to find characters with a character after,
@@ -319,13 +345,16 @@ def _(compile_letters, unittest):
             self.assertEqual(result, ["a", "b"])
 
     _ = unittest.main(argv=["python"], exit=False)
+
+    # this line is to create an explicit dependency between cells, so that marimo runs them in a specific order
+    RUN_4: Final = RUN_3 + 1
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(note, rep_):
     mo.md(f"""
-    {rep_("When you have found an edge case", "With the above edge cases")}, think about pecial handling in your script in order for your code to continue to behave correctly.
+    {rep_("When you have found an edge case", "With the above edge cases")}, think about special handling in your script in order for your code to continue to behave correctly.
 
     {note('''I think the code would require a significant change in the approach taken, as [the builtin `re` module](https://docs.python.org/3/library/re.html) doesn't provide any methods for searching with overlaps; all of the methods are for finding non-overlapping matches.
 
