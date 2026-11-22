@@ -119,7 +119,7 @@ def _():
         return PATTERN.findall(text)
 
     compile_letters(SENTENCE)
-    return (compile_letters,)
+    return PATTERN, compile_letters
 
 
 @app.cell(hide_code=True)
@@ -244,7 +244,7 @@ def _(ins_, note, rep_):
 
 @app.cell
 def _(RUN_2: Final, unittest):
-    _ = unittest.main(argv=["first-arg-is-ignored"], exit=False)
+    unittest.main(argv=["first-arg-is-ignored"], exit=False)
 
     # this line is to create an explicit dependency between cells, so that marimo runs them in a specific order
     RUN_3: Final = RUN_2 + 1
@@ -252,7 +252,7 @@ def _(RUN_2: Final, unittest):
 
 
 @app.cell(hide_code=True)
-def _(note, rep_):
+def _(del_, note, rep_):
     mo.md(f"""
     Did your {rep_("automatic", "unit")} test pass? Was {rep_("**OK**", "`OK`")} the result? If not, go back to your {rep_("automatic", "unit")} test code and make sure you filled in the blanks correctly. If your {rep_("automatic", "unit")} test passed, great! You have successfully filled in the gaps to create {rep_("an automatic", "a unit")} test that verifies {rep_("whether input strings have the correct list of string matches", "the function under test can produce the expected matches for certain strings")}.
 
@@ -297,13 +297,7 @@ def _(note, rep_):
     ```
 
     As it is, this test will run fine. Can you come up with at least one test case that you think could result in a wrong return value? {rep_("No wrong answers! Feel free to play around", "Give it your best shot")}!
-    """)
-    return
 
-
-@app.cell(hide_code=True)
-def _(del_, note, rep_):
-    mo.md(f"""
     Did you find any edge cases? If not, continue working on it. Choosing test cases can be an exercise in creativity. Coming up with different ways {del_("a ")}code might break {rep_("can be", "is")} super fun!
 
     If you are out of ideas: Try removing the spaces and figure out why they were in the example testcase. Does that give you an idea for other tests? When you have found at least one edge case, you are all done with this notebook.
@@ -344,11 +338,11 @@ def _(RUN_3: Final, compile_letters, unittest):
             result = compile_letters("abc")
             self.assertEqual(result, ["a", "b"])
 
-    _ = unittest.main(argv=["python"], exit=False)
+    unittest.main(argv=["python"], exit=False)
 
     # this line is to create an explicit dependency between cells, so that marimo runs them in a specific order
     RUN_4: Final = RUN_3 + 1
-    return
+    return (RUN_4,)
 
 
 @app.cell(hide_code=True)
@@ -358,14 +352,52 @@ def _(note, rep_):
 
     {note('''I think the code would require a significant change in the approach taken, as [the builtin `re` module](https://docs.python.org/3/library/re.html) doesn't provide any methods for searching with overlaps; all of the methods are for finding non-overlapping matches.
 
-    One way this might be done is:
+    One way this might be done is to iteratively search through the string with `re.Pattern.search()`, updating the `pos` parameter until the end of the string has been reached.
 
-    ```python
-    def compile_letters(text: str) -> list[str]:
-        pass
-    ```
+    This could look like:
     ''', title="Code improvements")}
+    """)
+    return
 
+
+@app.cell
+def _(PATTERN: Final, RUN_4: Final, compile_letters, unittest):
+    import unicodedata
+
+    UNASSIGNED_OR_NONCHARACTER_CATEGORY: Final = "Cn"
+
+    def new_compile_letters(text: str) -> list[str]:
+        "find all characters a-c with a character following it"
+
+        matches: list[str] = []
+        starting_at: int = 0
+        TEXT_LENGTH: Final = len(text)
+        while (starting_at < TEXT_LENGTH):
+            match = PATTERN.search(text, starting_at)
+            # if a match isn't found, the whole rest of the string has been searched, meaning the whole string has been searched, meaning all matches have been found
+            if match is None:
+                break
+
+            # is the character after the a, b, or c a noncharacter?
+            found_at = match.start()
+            if unicodedata.category(text[found_at + 1]) != UNASSIGNED_OR_NONCHARACTER_CATEGORY:
+                matches.append(match.group(1))
+
+            starting_at = found_at + 1
+
+        return matches
+
+    # substitute the new function for the old one, so that the tests don't have to be rewritten
+    with patch(f"{__name__}.{compile_letters.__name__}", new=new_compile_letters):
+        unittest.main(argv=["python"], exit=False)
+
+    RUN_5: Final = RUN_4 + 1
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(f"""
     You should take a moment to reflect on what you've done so far. It's super impressive and it's going to fit nicely in your IT toolkit.
     """)
     return
