@@ -25,10 +25,10 @@ def _():
     class RevisionVisibility(NamedTuple):
         "which version of the document do you want to see"
 
-        mine: Literal["mine"] = "mine"
-        both: Literal["both"] = "both"
+        mine: Literal["show only my version"] = "show only my version"
+        both: Literal["show edits"] = "show edits"
 
-    RevisionVisibilityType = Literal["mine", "both"]
+    RevisionVisibilityType = Literal["show only my version", "show edits"]
     RV: Final = RevisionVisibility()
     REVISION_VISIBILITY: RevisionVisibilityType = mo.ui.dropdown(
         RV,
@@ -36,7 +36,7 @@ def _():
         allow_select_none=False,
     )
     mo.md(
-        f"Which version of this notebook would you like to see: {REVISION_VISIBILITY}"
+        f"Would you like the edits I've made to this notebook to be visible: {REVISION_VISIBILITY}"
     )
     return REVISION_VISIBILITY, RV, RevisionVisibilityType
 
